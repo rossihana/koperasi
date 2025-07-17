@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DialogFooter } from '@/components/ui/dialog';
+import { Upload, X } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -39,6 +40,9 @@ const ProductForm = ({ product, onSubmit, onCancel }: ProductFormProps) => {
     stock: product?.stock?.toString() || '0'
   });
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>(product?.image || '');
+
   const categories = [
     { value: 'makanan', label: 'Makanan & Minuman' },
     { value: 'elektronik', label: 'Elektronik' },
@@ -46,6 +50,26 @@ const ProductForm = ({ product, onSubmit, onCancel }: ProductFormProps) => {
     { value: 'pakaian', label: 'Pakaian' },
     { value: 'kesehatan', label: 'Kesehatan' }
   ];
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setImagePreview(result);
+        setFormData(prev => ({ ...prev, image: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setFormData(prev => ({ ...prev, image: '' }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,13 +130,64 @@ const ProductForm = ({ product, onSubmit, onCancel }: ProductFormProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">URL Gambar</Label>
-        <Input
-          id="image"
-          value={formData.image}
-          onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-          placeholder="https://images.unsplash.com/..."
-        />
+        <Label>Gambar Produk</Label>
+        
+        {/* File Upload */}
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+          <input
+            type="file"
+            id="imageFile"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <label
+            htmlFor="imageFile"
+            className="flex flex-col items-center justify-center cursor-pointer"
+          >
+            <Upload className="w-8 h-8 text-gray-400 mb-2" />
+            <span className="text-sm text-gray-500">
+              Klik untuk upload gambar atau drag & drop
+            </span>
+            <span className="text-xs text-gray-400 mt-1">
+              PNG, JPG, GIF hingga 10MB
+            </span>
+          </label>
+        </div>
+
+        {/* Image Preview */}
+        {imagePreview && (
+          <div className="relative">
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="w-full h-32 object-cover rounded-lg"
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              onClick={removeImage}
+              className="absolute top-2 right-2 h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* URL Input sebagai alternatif */}
+        <div className="mt-4">
+          <Label htmlFor="image">Atau masukkan URL Gambar</Label>
+          <Input
+            id="image"
+            value={formData.image}
+            onChange={(e) => {
+              setFormData(prev => ({ ...prev, image: e.target.value }));
+              setImagePreview(e.target.value);
+            }}
+            placeholder="https://images.unsplash.com/..."
+          />
+        </div>
       </div>
 
       <div className="space-y-2">

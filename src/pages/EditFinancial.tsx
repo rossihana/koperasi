@@ -44,6 +44,7 @@ const EditFinancial = () => {
 
   const [savingsForm, setSavingsForm] = useState({
     type: 'add',
+    category: '',
     amount: '',
     description: ''
   });
@@ -56,6 +57,13 @@ const EditFinancial = () => {
     duration: '12'
   });
 
+  const savingsCategories = [
+    { value: 'pokok', label: 'Simpanan Pokok' },
+    { value: 'wajib', label: 'Simpanan Wajib' },
+    { value: 'sukarela', label: 'Simpanan Sukarela' },
+    { value: 'hari-raya', label: 'Simpanan Hari Raya' }
+  ];
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -66,10 +74,10 @@ const EditFinancial = () => {
   const handleSavingsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!savingsForm.amount || !savingsForm.description) {
+    if (!savingsForm.amount || !savingsForm.description || !savingsForm.category) {
       toast({
         title: "Data tidak lengkap",
-        description: "Harap isi semua field yang diperlukan",
+        description: "Harap isi semua field yang diperlukan termasuk kategori simpanan",
         variant: "destructive",
       });
       return;
@@ -89,15 +97,18 @@ const EditFinancial = () => {
       return;
     }
 
+    const categoryLabel = savingsCategories.find(cat => cat.value === savingsForm.category)?.label;
+
     // Simulate API call
     toast({
       title: "Simpanan berhasil diupdate",
-      description: `${savingsForm.type === 'add' ? 'Menambah' : 'Mengurangi'} simpanan sebesar ${formatCurrency(amount)}`,
+      description: `${savingsForm.type === 'add' ? 'Menambah' : 'Mengurangi'} ${categoryLabel} sebesar ${formatCurrency(amount)}`,
     });
 
     // Reset form
     setSavingsForm({
       type: 'add',
+      category: '',
       amount: '',
       description: ''
     });
@@ -274,6 +285,25 @@ const EditFinancial = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="savings-category">Kategori Simpanan</Label>
+                  <Select 
+                    value={savingsForm.category} 
+                    onValueChange={(value) => setSavingsForm(prev => ({ ...prev, category: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih kategori simpanan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {savingsCategories.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="savings-amount">Jumlah (Rp)</Label>
                   <Input
                     id="savings-amount"
@@ -296,10 +326,16 @@ const EditFinancial = () => {
                   />
                 </div>
 
-                {savingsForm.amount && (
+                {savingsForm.amount && savingsForm.category && (
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <h4 className="font-medium mb-2">Preview Transaksi:</h4>
                     <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span>Kategori:</span>
+                        <span className="font-medium">
+                          {savingsCategories.find(cat => cat.value === savingsForm.category)?.label}
+                        </span>
+                      </div>
                       <div className="flex justify-between">
                         <span>Saldo saat ini:</span>
                         <span className="font-medium">{formatCurrency(user.savings)}</span>

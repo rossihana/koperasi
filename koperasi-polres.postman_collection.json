@@ -1,0 +1,470 @@
+{
+	"info": {
+		"_postman_id": "6eca9cdc-ec6c-4d7f-b562-4a7270990561",
+		"name": "koperasi-polres",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39524381",
+		"_collection_link": "https://blue-star-292257.postman.co/workspace/Team-Workspace~9e3ada27-e429-4009-8e46-7d52a359dac0/collection/39524381-6eca9cdc-ec6c-4d7f-b562-4a7270990561?action=share&source=collection_link&creator=39524381"
+	},
+	"item": [
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"nrp\": \"12345678\",\r\n  \"nama\": \"Mamad\",\r\n  \"jabatan\": \"Brigadir\",\r\n  \"password\": \"admin1234\",\r\n  \"role\": \"admin\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9000/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "logout",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"nrp\": \"12345678\",\r\n  \"nama\": \"Mamad\",\r\n  \"jabatan\": \"Brigadir\",\r\n  \"password\": \"admin1234\",\r\n  \"role\": \"admin\"\r\n}"
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/auth/logout",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "addMember",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"nrp\": \"123456785912as3\",\r\n  \"nama\": \"Mamad Surahmad\",\r\n  \"jabatan\": \"Brigadir\",\r\n  \"password\": \"admin1234\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/admin/members",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"members"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getDataUser",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/member/profile",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"member",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllMembers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/admin/members",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"members"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getMemberDetail",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/admin/members/cmccp5kjq0000u0o4vlt1xt8z",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"members",
+						"cmccp5kjq0000u0o4vlt1xt8z"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "addPiutang",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"jenis\": \"Toko\",\r\n  \"besarPinjaman\": 3000000,\r\n  \"totalPiutang\": 3240000,\r\n  \"biayaAngsuran\": 324000,\r\n  \"totalAngsuran\": 10,\r\n  \"description\": \"Pinjaman dari pak mamad buat renovasi rumah\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/admin/members/cmccp5kjq0000u0o4vlt1xt8z/piutang",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"members",
+						"cmccp5kjq0000u0o4vlt1xt8z",
+						"piutang"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "updatePiutangbyMemberId",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"type\": \"payment\",\r\n  \"amount\": 324000,\r\n  \"description\": \"Pembayaran angsuran ke-3\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/admin/members/{{MEMBER_ID}}/piutang/{{PIUTANG_ID}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"members",
+						"{{MEMBER_ID}}",
+						"piutang",
+						"{{PIUTANG_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "updateSimpananbyMemberId",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"setoran\",\r\n    \"category\": \"sukarela\",\r\n    \"amount\": 200000,\r\n    \"description\": \"Setoran simpanan wajib bulan Juni 2025\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/admin/members/{{MEMBER_ID}}/simpanan",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"members",
+						"{{MEMBER_ID}}",
+						"simpanan"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "addProduct",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "namaProduk",
+							"value": "Asus ROG",
+							"type": "text"
+						},
+						{
+							"key": "harga",
+							"value": "50000",
+							"type": "text"
+						},
+						{
+							"key": "deskripsi",
+							"value": "HP gaming",
+							"type": "text"
+						},
+						{
+							"key": "namaKategori",
+							"value": "Elektronik",
+							"type": "text"
+						},
+						{
+							"key": "foto",
+							"type": "file",
+							"src": "/C:/Users/Li Xingyun/Downloads/images (2).jpg"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/admin/products",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllProducts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/user/products?page=1",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						"products"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getProductById",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/user/products/{{PRODUCT_ID}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"user",
+						"products",
+						"{{PRODUCT_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "updateProductById",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "namaKategori",
+							"value": "Elektronik",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/admin/products/{{PRODUCT_ID}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"products",
+						"{{PRODUCT_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getSimpananHistoryById(admin)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/admin/members/{{MEMBER_ID}}/transactions/simpanan",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"members",
+						"{{MEMBER_ID}}",
+						"transactions",
+						"simpanan"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getSimpananHistoryById(member)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/member/me/transactions/simpanan",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"member",
+						"me",
+						"transactions",
+						"simpanan"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getPiutangHistoryByI(admin)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/admin/members/{{MEMBER_ID}}/transactions/piutang",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"members",
+						"{{MEMBER_ID}}",
+						"transactions",
+						"piutang"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getPiutangHistoryByI(member)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/member/me/transactions/piutang",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"member",
+						"me",
+						"transactions",
+						"piutang"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getCombinedHistoryByI(admin)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/admin/members/{{MEMBER_ID}}/transactions/combined",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"admin",
+						"members",
+						"{{MEMBER_ID}}",
+						"transactions",
+						"combined"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getCombinedHistoryByI(member)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/member/me/transactions/combined",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"member",
+						"me",
+						"transactions",
+						"combined"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

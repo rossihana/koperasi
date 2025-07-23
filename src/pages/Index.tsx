@@ -1,5 +1,7 @@
 
 import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -12,10 +14,12 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
-import { useMembersPublic, useUserProducts } from '@/hooks/useApi';
+import { useMembersPublic, useUserProducts, useMember, useMemberProfile, useMemberTransactionsCombined, useMyTransactionsCombined } from '@/hooks/useApi';
 
 const Index = () => {
   const { user } = useAuth();
+  const { data: profileResponse, isLoading: isProfileLoading, error: profileError } = useMemberProfile();
+  const profile = profileResponse?.data || profileResponse;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -35,46 +39,24 @@ const Index = () => {
   const quickStats = [
     {
       title: 'Total Simpanan',
-      value: formatCurrency(user?.simpanan || 0),
+      value: formatCurrency(profile?.simpanan?.totalSimpanan ?? 0),
       icon: Wallet,
       color: 'text-green-600',
       bgColor: 'bg-green-100'
     },
     {
       title: 'Total Piutang',
-      value: formatCurrency(user?.piutang || 0),
+      value: formatCurrency(profile?.summary?.totalActivePiutangAmount ?? 0),
       icon: CreditCard,
       color: 'text-red-600',
       bgColor: 'bg-red-100'
     }
   ];
 
-  const recentTransactions = [
-    {
-      id: 1,
-      type: 'Simpanan',
-      amount: 500000,
-      date: '2024-01-15',
-      description: 'Setoran bulanan',
-      isCredit: true
-    },
-    {
-      id: 2,
-      type: 'Piutang',
-      amount: 200000,
-      date: '2024-01-10',
-      description: 'Pinjaman konsumtif',
-      isCredit: false
-    },
-    {
-      id: 3,
-      type: 'Simpanan',
-      amount: 100000,
-      date: '2024-01-05',
-      description: 'Simpanan sukarela',
-      isCredit: true
-    }
-  ];
+  // Fetch member transactions
+  const [currentPage, setCurrentPage] = useState(1);
+  const transactionsPerPage = 5;
+  const { data: transactionsResponse } = useMyTransactionsCombined();
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -168,34 +150,85 @@ const Index = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center">
-                  <div className={`p-2 rounded-lg mr-4 ${
-                    transaction.isCredit ? 'bg-green-100' : 'bg-red-100'
-                  }`}>
-                    {transaction.isCredit ? (
-                      <ArrowUpRight className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <ArrowDownRight className="w-5 h-5 text-red-600" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{transaction.description}</p>
-                    <p className="text-sm text-gray-500">
-                      {transaction.type} • {new Date(transaction.date).toLocaleDateString('id-ID')}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`font-bold ${
-                    transaction.isCredit ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {transaction.isCredit ? '+' : '-'}{formatCurrency(transaction.amount)}
-                  </p>
-                </div>
+            {!transactionsResponse ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="animate-spin h-6 w-6 border-2 border-green-600 border-t-transparent rounded-full"></div>
+                <span className="ml-2 text-gray-600">Memuat transaksi...</span>
               </div>
-            ))}
+            ) : !transactionsResponse.data?.transactions || transactionsResponse.data.transactions.length === 0 ? (
+              <div className="text-center p-8 text-gray-500">
+                Belum ada transaksi
+              </div>
+            ) : (
+              <>
+                {transactionsResponse.data.transactions
+                  .slice((currentPage - 1) * transactionsPerPage, currentPage * transactionsPerPage)
+                  .map((transaction) => (
+                    <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center">
+                        <div className={`p-2 rounded-lg mr-4 ${
+                          transaction.type === 'setoran' ? 'bg-green-100' : 'bg-red-100'
+                        }`}>
+                          {transaction.type === 'setoran' ? (
+                            <ArrowUpRight className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <ArrowDownRight className="w-5 h-5 text-red-600" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{transaction.description}</p>
+                          <p className="text-sm text-gray-500">
+                            {transaction.category ? 'Simpanan ' + transaction.category : 'Piutang'} • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-bold ${
+                          transaction.type === 'setoran' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {formatCurrency(Math.abs(transaction.amount))}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  
+                {/* Pagination */}
+                {transactionsResponse.data.transactions.length > transactionsPerPage && (
+                  <div className="flex justify-center items-center space-x-2 pt-4">
+                    <button
+                      onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1 rounded-md ${
+                        currentPage === 1 
+                          ? 'bg-gray-100 text-gray-400' 
+                          : 'bg-green-50 text-green-600 hover:bg-green-100'
+                      }`}
+                    >
+                      Sebelumnya
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      Halaman {currentPage} dari{' '}
+                      {Math.ceil(transactionsResponse.data.transactions.length / transactionsPerPage)}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(page => Math.min(
+                        Math.ceil(transactionsResponse.data.transactions.length / transactionsPerPage),
+                        page + 1
+                      ))}
+                      disabled={currentPage === Math.ceil(transactionsResponse.data.transactions.length / transactionsPerPage)}
+                      className={`px-3 py-1 rounded-md ${
+                        currentPage === Math.ceil(transactionsResponse.data.transactions.length / transactionsPerPage)
+                          ? 'bg-gray-100 text-gray-400'
+                          : 'bg-green-50 text-green-600 hover:bg-green-100'
+                      }`}
+                    >
+                      Selanjutnya
+                    </button>
+                  </div>
+                )}
+          
+              </>
+            )}
           </div>
         </CardContent>
       </Card>

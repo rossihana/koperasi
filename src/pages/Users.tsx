@@ -29,7 +29,7 @@ import {
 import { Search, Edit, Trash2, Loader2, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { useMembers, useDeleteMember, useMembersPublic } from '@/hooks/useApi';
+import { useMembers, useDeleteMember, useMembersPublic, useMember } from '@/hooks/useApi';
 import { Member } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
@@ -148,6 +148,65 @@ const Users = () => {
     );
   }
 
+  const MemberRow = ({ member, currentUser, navigate, formatCurrency, formatDate }) => {
+    const { data: detail, isLoading: isDetailLoading } = useMember(member.id);
+    const simpanan = detail?.data?.simpanan?.totalSimpanan ?? 0;
+    const piutang = detail?.data?.summary?.totalActivePiutangAmount ?? 0;
+
+    return (
+      <TableRow key={member.id}>
+        <TableCell className="font-medium">{member.nrp}</TableCell>
+        <TableCell>{member.nama}</TableCell>
+        <TableCell>{member.jabatan}</TableCell>
+        <TableCell>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            member.role === 'admin' 
+              ? 'bg-purple-100 text-purple-800' 
+              : 'bg-blue-100 text-blue-800'
+          }`}>
+            {member.role === 'admin' ? 'Admin' : 'Anggota'}
+          </span>
+        </TableCell>
+        <TableCell className="text-green-600 font-medium">
+          {isDetailLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : formatCurrency(simpanan)}
+        </TableCell>
+        <TableCell className="text-red-600 font-medium">
+          {isDetailLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : formatCurrency(piutang)}
+        </TableCell>
+        <TableCell>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            member.hasActiveLoan 
+              ? 'bg-orange-100 text-orange-800' 
+              : 'bg-gray-100 text-gray-800'
+          }`}>
+            {member.hasActiveLoan ? `${member.activeLoanCount} pinjaman` : 'Tidak ada'}
+          </span>
+        </TableCell>
+        <TableCell>{formatDate(member.joinDate || member.createdAt)}</TableCell>
+        <TableCell className="text-right">
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate(`/user/${member.id}`)}
+            >
+              <Edit className="h-3 w-3" />
+            </Button>
+            {currentUser?.role === 'admin' && member.id !== currentUser.id && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => setDeleteUserId(member.id)}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
@@ -202,56 +261,14 @@ const Users = () => {
               </TableRow>
             ) : (
               filteredMembers.map((member: Member) => (
-                <TableRow key={member.id}>
-                  <TableCell className="font-medium">{member.nrp}</TableCell>
-                  <TableCell>{member.nama}</TableCell>
-                  <TableCell>{member.jabatan}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      member.role === 'admin' 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {member.role === 'admin' ? 'Admin' : 'Anggota'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-green-600 font-medium">
-                    {formatCurrency(member.simpanan || 0)}
-                  </TableCell>
-                  <TableCell className="text-red-600 font-medium">
-                    {formatCurrency(member.piutang || 0)}
-                  </TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      member.hasActiveLoan 
-                        ? 'bg-orange-100 text-orange-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {member.hasActiveLoan ? `${member.activeLoanCount} pinjaman` : 'Tidak ada'}
-                    </span>
-                  </TableCell>
-                  <TableCell>{formatDate(member.joinDate || member.createdAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => navigate(`/user/${member.id}`)}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      {currentUser?.role === 'admin' && member.id !== currentUser.id && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => setDeleteUserId(member.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <MemberRow
+                  key={member.id}
+                  member={member}
+                  currentUser={currentUser}
+                  navigate={navigate}
+                  formatCurrency={formatCurrency}
+                  formatDate={formatDate}
+                />
               ))
             )}
           </TableBody>

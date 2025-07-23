@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -197,21 +196,31 @@ const UserDetail = () => {
             <CardContent>
               <div className="space-y-4">
                 {member.simpanan?.transactions?.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                  <div
+                    key={transaction.id}
+                    className={`flex items-center justify-between p-4 rounded-lg ${transaction.type === 'penarikan' ? 'bg-red-50' : 'bg-green-50'}`}
+                  >
                     <div className="flex items-center">
-                      <div className="p-2 rounded-lg bg-green-100 mr-4">
-                        <ArrowUpRight className="w-5 h-5 text-green-600" />
+                      <div
+                        className={`p-2 rounded-lg ${transaction.type === 'penarikan' ? 'bg-red-100' : 'bg-green-100'} mr-4`}
+                      >
+                        {transaction.type === 'penarikan' ? (
+                          <ArrowDownRight className="w-5 h-5 text-red-600" />
+                        ) : (
+                          <ArrowUpRight className="w-5 h-5 text-green-600" />
+                        )}
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">{transaction.description}</p>
-                        <p className="text-sm text-gray-500">
-                          {formatDate(transaction.createdAt)}
-                        </p>
+                        <p className="text-sm text-gray-500">{formatDate(transaction.createdAt)}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-green-600">
-                        +{formatCurrency(transaction.amount)}
+                      <p
+                        className={`font-bold ${transaction.type === 'penarikan' ? 'text-red-600' : 'text-green-600'}`}
+                      >
+                        {transaction.type === 'penarikan' ? '-' : '+'}
+                        {formatCurrency(transaction.amount)}
                       </p>
                       <p className="text-sm text-gray-500">
                         Saldo: {formatCurrency(transaction.balanceAfter)}

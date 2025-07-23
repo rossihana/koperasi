@@ -43,7 +43,7 @@ export const useMembersPublic = (page: number = 1) => {
       try {
         // Try admin endpoint first with pagination
         return await apiClient.get(`${API_ENDPOINTS.ADMIN_MEMBERS}?page=${page}`);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // If admin endpoint fails, return empty array or mock data
         console.log('Admin endpoint failed, returning empty array');
         return { 
@@ -93,6 +93,29 @@ export const useDeleteMember = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
     },
+  });
+};
+
+// Member transactions hooks
+export const useMemberSimpananTransactions = () => {
+  return useQuery({
+    queryKey: ['member-simpanan-transactions'],
+    queryFn: () => apiClient.get(API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_SIMPANAN),
+  });
+};
+
+export const useMemberPiutangTransactions = () => {
+  return useQuery({
+    queryKey: ['member-piutang-transactions'],
+    queryFn: () => apiClient.get(API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_PIUTANG),
+  });
+};
+
+// Member combined transactions
+export const useMemberCombinedTransactions = () => {
+  return useQuery({
+    queryKey: ['member-transactions-combined'],
+    queryFn: () => apiClient.get(API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_COMBINED),
   });
 };
 

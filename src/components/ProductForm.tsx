@@ -37,8 +37,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProp
     price: product?.price.toString() || '',
     image: product?.image || '',
     category: product?.category || '',
-    description: product?.description || '',
-    stock: product?.stock?.toString() || '0'
+    description: product?.description || ''
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -84,8 +83,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProp
       price: parseInt(formData.price),
       image: '', // not used for upload
       category: formData.category,
-      description: formData.description,
-      stock: parseInt(formData.stock) || 0
+      description: formData.description
     };
     if (imageFile) {
       submitData.imageFile = imageFile;
@@ -195,16 +193,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProp
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="stock">Stok</Label>
-        <Input
-          id="stock"
-          type="number"
-          value={formData.stock}
-          onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
-          placeholder="0"
-        />
-      </div>
+      {/* Hapus field stok */}
 
       <div className="space-y-2">
         <Label htmlFor="description">Deskripsi</Label>

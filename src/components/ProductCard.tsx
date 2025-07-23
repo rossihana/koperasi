@@ -16,9 +16,10 @@ interface ProductCardProps {
   isAdmin: boolean;
   onEdit?: (product: Product) => void;
   onDelete?: (id: string) => void;
+  onClick?: (id: string) => void;
 }
 
-const ProductCard = ({ product, isAdmin, onEdit, onDelete }: ProductCardProps) => {
+const ProductCard = ({ product, isAdmin, onEdit, onDelete, onClick }: ProductCardProps) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -27,7 +28,10 @@ const ProductCard = ({ product, isAdmin, onEdit, onDelete }: ProductCardProps) =
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+    <Card
+      className="hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+      onClick={() => onClick?.(product.id)}
+    >
       <div className="relative">
         <img
           src={product.image}

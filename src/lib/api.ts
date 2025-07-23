@@ -96,7 +96,7 @@ export const apiClient = {
   },
 
   // POST request
-  async post(endpoint: string, data?: any) {
+  async post<T extends Record<string, unknown>>(endpoint: string, data?: T) {
     return this.request(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
@@ -104,7 +104,7 @@ export const apiClient = {
   },
 
   // PUT request
-  async put(endpoint: string, data?: any) {
+  async put<T extends Record<string, unknown>>(endpoint: string, data?: T) {
     return this.request(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
@@ -117,7 +117,7 @@ export const apiClient = {
   },
 
   // PATCH request
-  async patch(endpoint: string, data?: any) {
+  async patch<T extends Record<string, unknown>>(endpoint: string, data?: T) {
     return this.request(endpoint, {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
@@ -216,6 +216,30 @@ export interface LoginResponse {
 }
 
 // Member/User types
+export interface MemberSimpanan {
+  totalSimpanan: number;
+  simpananPokok: number;
+  simpananWajib: number;
+  simpananSukarela: number;
+  tabunganHariRaya: number;
+}
+
+export interface SimpananTransactionsSummary {
+  totalTransactions: number;
+  totalSetoran: number;
+  totalPenarikan: number;
+  totalKoreksi: number;
+  lastTransactionDate: string;
+}
+
+export interface MemberSummary {
+  totalActivePiutangAmount: number;
+  totalPaidPiutangAmount: number;
+  activePiutang: number;
+  paidPiutang: number;
+  simpananTransactions: SimpananTransactionsSummary;
+}
+
 export interface Member {
   id: string;
   nrp: string;
@@ -225,9 +249,8 @@ export interface Member {
   createdAt: string;
   activeLoanCount: number;
   hasActiveLoan: boolean;
-  // Optional fields for backward compatibility
-  simpanan?: number;
-  piutang?: number;
+  simpanan?: MemberSimpanan;
+  summary?: MemberSummary;
   joinDate?: string;
 }
 
@@ -264,7 +287,7 @@ export interface Piutang {
   updatedAt: string;
 }
 
-export interface CreatePiutangRequest {
+export interface CreatePiutangRequest extends Record<string, unknown> {
   jenis: string;
   besarPinjaman: number;
   totalPiutang: number;
@@ -273,16 +296,16 @@ export interface CreatePiutangRequest {
   description: string;
 }
 
-export interface UpdatePiutangRequest {
+export interface UpdatePiutangRequest extends Record<string, unknown> {
   type: 'payment';
   amount: number;
   description: string;
 }
 
 // Simpanan types
-export interface UpdateSimpananRequest {
-  type: 'setoran';
-  category: 'wajib' | 'sukarela';
+export interface UpdateSimpananRequest extends Record<string, unknown> {
+  type: 'setoran' | 'penarikan';
+  category: 'wajib' | 'sukarela' | 'pokok' | 'hari-raya';
   amount: number;
   description: string;
 }

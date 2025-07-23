@@ -48,7 +48,9 @@ const Layout = ({ children }: LayoutProps) => {
     { name: 'Beranda', href: '/', icon: Home, current: location.pathname === '/' },
     { name: 'Profil', href: '/profile', icon: User, current: location.pathname === '/profile' },
     { name: 'Toko', href: '/shop', icon: Store, current: location.pathname === '/shop' },
-    { name: 'Anggota', href: '/users', icon: Users, current: location.pathname === '/users' },
+    ...(user?.role === 'admin' ? [
+      { name: 'Anggota', href: '/users', icon: Users, current: location.pathname === '/users' }
+    ] : [])
   ];
 
   return (
@@ -63,7 +65,7 @@ const Layout = ({ children }: LayoutProps) => {
                   <div className="w-15 h-15 rounded-lg flex items-center justify-center overflow-hidden">
                     <img src="/IMG_4716.PNG" alt="Logo Koperasi" className="w-12 h-12 object-contain" />
                   </div>
-                  <span className="text-2xl font-bold text-green-800">Koperasi</span>
+                  <span className="text-2xl font-bold text-green-800">Koperasi Primkoppolresta</span>
                 </Link>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

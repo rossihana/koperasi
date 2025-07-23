@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { Eye, EyeOff, ShoppingBag } from 'lucide-react';
+import { Eye, EyeOff, ShoppingBag, ArrowLeft } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -69,10 +69,19 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50 p-4">
       <Card className="w-full max-w-md shadow-xl">
+        {/* Tombol Back */}
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-green-700 hover:text-green-900 font-medium mb-2 ml-4 mt-4"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Kembali
+        </button>
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center">
-              <ShoppingBag className="w-8 h-8 text-white" />
+            <div className="w-32 h-32 flex items-center justify-center overflow-hidden">
+              <img src="/IMG_4716.PNG" alt="Logo Koperasi" className="w-32 h-32 object-contain" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-green-800">Daftar Anggota</CardTitle>
@@ -157,12 +166,6 @@ const Register = () => {
               {isLoading ? 'Memproses...' : 'Daftar'}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-gray-600">
-            Sudah memiliki akun?{' '}
-            <Link to="/login" className="text-green-600 hover:text-green-700 font-medium">
-              Masuk sekarang
-            </Link>
-          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,8 +1,10 @@
 
-import { useMemberProfile } from '@/hooks/useApi';
+import { useMemberProfile, useMemberSimpananTransactions, useMemberPiutangTransactions } from '@/hooks/useApi';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProfileSummaryContent } from '@/components/ProfileSummaryContent';
 import {
   User,
   Wallet,
@@ -18,8 +20,26 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+interface Transaction {
+  id: string;
+  amount: number;
+  description: string;
+  category?: string;
+  type: string;
+  createdAt: string;
+}
+
 const Profile = () => {
   const { data: profileResponse, isLoading, error } = useMemberProfile();
+  const { data: simpananData, isLoading: isLoadingSimpanan } = useMemberSimpananTransactions();
+  const { data: piutangData, isLoading: isLoadingPiutang } = useMemberPiutangTransactions();
+
+  // Pagination state for simpanan
+  const [currentSimpananPage, setCurrentSimpananPage] = useState(1);
+  const transactionsPerPage = 5;
+  
+  // Pagination state for piutang
+  const [currentPiutangPage, setCurrentPiutangPage] = useState(1);
   const profile = profileResponse?.data || profileResponse;
 
   const formatCurrency = (amount: number | string) => {
@@ -129,7 +149,7 @@ const Profile = () => {
       </div>
 
       {/* Transaction History and Summary */}
-      <Tabs defaultValue="history" className="w-full">
+      <Tabs defaultValue="summary" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="history">Riwayat Transaksi</TabsTrigger>
           <TabsTrigger value="summary">Ringkasan</TabsTrigger>
@@ -146,7 +166,78 @@ const Profile = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* Mock data removed, will be implemented with actual API data */}
+                {isLoadingSimpanan ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <span>Memuat data...</span>
+                  </div>
+                ) : !simpananData?.data?.transactions || simpananData.data.transactions.length === 0 ? (
+                  <div className="text-center p-4 text-gray-500">
+                    Belum ada transaksi simpanan
+                  </div>
+                ) : (
+                  <>
+                    {simpananData.data.transactions
+                      .slice(
+                        (currentSimpananPage - 1) * transactionsPerPage,
+                        currentSimpananPage * transactionsPerPage
+                      )
+                      .map((transaction: Transaction) => (
+                        <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center">
+                            <div className="p-2 rounded-lg bg-green-100 mr-4">
+                              <ArrowUpRight className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{transaction.description}</p>
+                              <p className="text-sm text-gray-500">
+                                Simpanan {transaction.category} • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-green-600">
+                              {formatCurrency(transaction.amount)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    
+                    {/* Pagination Controls */}
+                    {simpananData.data.transactions.length > transactionsPerPage && (
+                      <div className="flex justify-center items-center space-x-2 pt-4">
+                        <button
+                          onClick={() => setCurrentSimpananPage(page => Math.max(1, page - 1))}
+                          disabled={currentSimpananPage === 1}
+                          className={`px-3 py-1 rounded-md ${
+                            currentSimpananPage === 1
+                              ? 'bg-gray-100 text-gray-400'
+                              : 'bg-green-50 text-green-600 hover:bg-green-100'
+                          }`}
+                        >
+                          Sebelumnya
+                        </button>
+                        <span className="text-sm text-gray-600">
+                          Halaman {currentSimpananPage} dari{' '}
+                          {Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
+                        </span>
+                        <button
+                          onClick={() => setCurrentSimpananPage(page => 
+                            Math.min(Math.ceil(simpananData.data.transactions.length / transactionsPerPage), page + 1)
+                          )}
+                          disabled={currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
+                          className={`px-3 py-1 rounded-md ${
+                            currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)
+                              ? 'bg-gray-100 text-gray-400'
+                              : 'bg-green-50 text-green-600 hover:bg-green-100'
+                          }`}
+                        >
+                          Selanjutnya
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -161,68 +252,173 @@ const Profile = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* Mock data removed, will be implemented with actual API data */}
+                {isLoadingPiutang ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <span>Memuat data...</span>
+                  </div>
+                ) : !piutangData?.data?.transactions || piutangData.data.transactions.length === 0 ? (
+                  <div className="text-center p-4 text-gray-500">
+                    Belum ada transaksi piutang
+                  </div>
+                ) : (
+                  <>
+                    {piutangData.data.transactions
+                      .slice(
+                        (currentPiutangPage - 1) * transactionsPerPage,
+                        currentPiutangPage * transactionsPerPage
+                      )
+                      .map((transaction: Transaction) => (
+                        <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center">
+                            <div className="p-2 rounded-lg bg-red-100 mr-4">
+                              <ArrowDownRight className="w-5 h-5 text-red-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{transaction.description}</p>
+                              <p className="text-sm text-gray-500">
+                                Piutang • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-red-600">
+                              {formatCurrency(transaction.amount)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    
+                    {/* Pagination Controls */}
+                    {piutangData.data.transactions.length > transactionsPerPage && (
+                      <div className="flex justify-center items-center space-x-2 pt-4">
+                        <button
+                          onClick={() => setCurrentPiutangPage(page => Math.max(1, page - 1))}
+                          disabled={currentPiutangPage === 1}
+                          className={`px-3 py-1 rounded-md ${
+                            currentPiutangPage === 1
+                              ? 'bg-gray-100 text-gray-400'
+                              : 'bg-red-50 text-red-600 hover:bg-red-100'
+                          }`}
+                        >
+                          Sebelumnya
+                        </button>
+                        <span className="text-sm text-gray-600">
+                          Halaman {currentPiutangPage} dari{' '}
+                          {Math.ceil(piutangData.data.transactions.length / transactionsPerPage)}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPiutangPage(page => 
+                            Math.min(Math.ceil(piutangData.data.transactions.length / transactionsPerPage), page + 1)
+                          )}
+                          disabled={currentPiutangPage === Math.ceil(piutangData.data.transactions.length / transactionsPerPage)}
+                          className={`px-3 py-1 rounded-md ${
+                            currentPiutangPage === Math.ceil(piutangData.data.transactions.length / transactionsPerPage)
+                              ? 'bg-gray-100 text-gray-400'
+                              : 'bg-red-50 text-red-600 hover:bg-red-100'
+                          }`}
+                        >
+                          Selanjutnya
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="summary">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <History className="w-5 h-5 mr-2" />
-                Ringkasan Transaksi
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-green-700 text-lg">Simpanan</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total tahun ini</span>
-                      <span className="font-medium text-green-600">
-                        {formatCurrency(profile.summary?.totalSavingsThisYear || 0)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Jumlah transaksi</span>
-                      <span className="font-medium">{profile.summary?.savingsTransactions || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Rata-rata per transaksi</span>
-                      <span className="font-medium">
-                        {formatCurrency(profile.summary?.averageSavingsPerTransaction || 0)}
-                      </span>
-                    </div>
+          <div className="space-y-6">
+            {/* Ringkasan Simpanan Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-700">
+                  <Wallet className="w-5 h-5 mr-2" />
+                  Ringkasan Simpanan
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Total simpanan</span>
+                    <span className="font-bold text-gray-900">
+                      {formatCurrency(profile.simpanan?.totalSimpanan || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Simpanan Pokok</span>
+                    <span className="font-bold text-gray-900">
+                      {formatCurrency(profile.simpanan?.simpananPokok || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Simpanan Wajib</span>
+                    <span className="font-bold text-gray-900">
+                      {formatCurrency(profile.simpanan?.simpananWajib || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Simpanan Sukarela</span>
+                    <span className="font-bold text-gray-900">
+                      {formatCurrency(profile.simpanan?.simpananSukarela || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Tabungan Hari Raya</span>
+                    <span className="font-bold text-gray-900">
+                      {formatCurrency(profile.simpanan?.tabunganHariRaya || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-gray-600">Jumlah transaksi</span>
+                    <span className="font-bold text-gray-900">
+                      {profile.summary?.simpananTransactions?.totalTransactions || 0}
+                    </span>
                   </div>
                 </div>
-                
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-red-700 text-lg">Piutang</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total tahun ini</span>
-                      <span className="font-medium text-red-600">
-                        {formatCurrency(profile.summary?.totalDebtThisYear || 0)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Jumlah transaksi</span>
-                      <span className="font-medium">{profile.summary?.debtTransactions || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Rata-rata per transaksi</span>
-                      <span className="font-medium">
-                        {formatCurrency(profile.summary?.averageDebtPerTransaction || 0)}
-                      </span>
-                    </div>
+              </CardContent>
+            </Card>
+
+            {/* Ringkasan Piutang Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-red-700">
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Ringkasan Piutang
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Total piutang aktif</span>
+                    <span className="font-bold text-gray-900">
+                      {formatCurrency(profile.summary?.totalActivePiutangAmount || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Piutang aktif</span>
+                    <span className="font-bold text-gray-900">
+                      {profile.summary?.activePiutang || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Piutang lunas</span>
+                    <span className="font-bold text-gray-900">
+                      {profile.summary?.paidPiutang || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Total piutang lunas</span>
+                    <span className="font-bold text-gray-900">
+                      {formatCurrency(profile.summary?.totalPaidPiutangAmount || 0)}
+                    </span>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

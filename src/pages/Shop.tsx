@@ -33,6 +33,7 @@ import ProductForm from '@/components/ProductForm';
 import { useUserProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useApi';
 import { Product } from '@/lib/api';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Shop = () => {
   const { user } = useAuth();
@@ -94,18 +95,17 @@ const Shop = () => {
     }
   };
 
-  const handleEditProduct = async (productData: { namaProduk: string; harga: number; deskripsi: string; namaKategori: string; foto?: File }) => {
+  const handleEditProduct = async (productData: { name: string; price: number; description: string; category: string; imageFile?: File }) => {
     if (!editingProduct) return;
     try {
       const formData = new FormData();
-      formData.append('namaProduk', productData.namaProduk);
-      formData.append('harga', productData.harga.toString());
-      formData.append('deskripsi', productData.deskripsi || '');
-      formData.append('namaKategori', productData.namaKategori);
-      if (productData.foto instanceof File && productData.foto.size > 0) {
-        formData.append('foto', productData.foto);
+      formData.append('namaProduk', productData.name);
+      formData.append('harga', productData.price.toString());
+      formData.append('deskripsi', productData.description || '');
+      formData.append('namaKategori', productData.category);
+      if (productData.imageFile instanceof File && productData.imageFile.size > 0) {
+        formData.append('foto', productData.imageFile);
       }
-      console.log('DEBUG: PUT /admin/products/:id', editingProduct.id, formData);
       const response = await updateProductMutation.mutateAsync({
         id: editingProduct.id,
         data: formData
@@ -160,6 +160,8 @@ const Shop = () => {
     setShowProductForm(false);
     setEditingProduct(null);
   };
+
+  const navigate = useNavigate();
 
   // Loading state
   if (isLoading) {
@@ -244,12 +246,13 @@ const Shop = () => {
                 id: product.id,
                 name: product.namaProduk,
                 price: product.harga,
-                image: product.foto,
+                image: product.fotoProduk || product.foto || '/placeholder.svg',
                 category: product.namaKategori
               }}
               isAdmin={user?.role === 'admin'}
               onEdit={user?.role === 'admin' ? () => openEditForm(product) : undefined}
               onDelete={user?.role === 'admin' ? () => setDeleteProductId(product.id) : undefined}
+              onClick={(id) => navigate(`/product/${id}`)}
             />
           ))}
         </div>
@@ -291,28 +294,24 @@ const Shop = () => {
               id: editingProduct.id,
               name: editingProduct.namaProduk,
               price: editingProduct.harga,
-              image: editingProduct.foto,
+              image: (editingProduct as any).fotoProduk || editingProduct.foto || '/placeholder.svg',
               category: editingProduct.namaKategori,
-              description: editingProduct.deskripsi,
-              stock: 0
+              description: editingProduct.deskripsi
             } : undefined}
             onSubmit={(productData) => {
-              const formData: any = {
-                namaProduk: productData.name,
-                harga: productData.price,
-                deskripsi: productData.description || '',
-                namaKategori: productData.category
-              };
-              if (productData.imageFile) {
-                formData.foto = productData.imageFile;
-              }
-              
               if (editingProduct) {
-                console.log('DEBUG: update product', formData, editingProduct.id);
-                handleEditProduct(formData);
+                handleEditProduct({
+                  ...productData,
+                  description: productData.description || ''
+                });
               } else {
-                console.log('DEBUG: add product', formData);
-                handleAddProduct(formData);
+                handleAddProduct({
+                  namaProduk: productData.name,
+                  harga: productData.price,
+                  deskripsi: productData.description || '',
+                  namaKategori: productData.category,
+                  foto: productData.imageFile
+                });
               }
             }}
             onCancel={closeForm}

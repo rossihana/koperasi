@@ -96,6 +96,68 @@ export const useDeleteMember = () => {
   });
 };
 
+interface UpdateMemberRequest extends Record<string, unknown> {
+  nrp: string;
+  nama: string;
+  jabatan: string;
+  status: 'aktif' | 'nonaktif' | 'suspend';
+}
+
+export const useUpdateMember = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ memberId, data }: { memberId: string; data: UpdateMemberRequest }) =>
+      apiClient.put(API_ENDPOINTS.ADMIN_MEMBER_BY_ID(memberId), data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      queryClient.invalidateQueries({ queryKey: ['member', variables.memberId] });
+    },
+  });
+};
+
+// Types for password update
+interface UpdatePasswordPayload extends Record<string, unknown> {
+  oldPassword?: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface AdminUpdatePasswordParams {
+  memberId: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface MemberUpdatePasswordParams {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// Password update hooks
+export const useUpdateMemberPassword = () => {
+  return useMutation({
+    mutationFn: ({ memberId, newPassword, confirmPassword }: AdminUpdatePasswordParams) =>
+      apiClient.patch(API_ENDPOINTS.ADMIN_MEMBER_PASSWORD(memberId), { 
+        newPassword,
+        confirmPassword
+      } as UpdatePasswordPayload),
+  });
+};
+
+// Hook for member to update their own password
+export const useUpdateOwnPassword = () => {
+  return useMutation({
+    mutationFn: ({ oldPassword, newPassword, confirmPassword }: MemberUpdatePasswordParams) =>
+      apiClient.patch(API_ENDPOINTS.MEMBER_PASSWORD, {
+        oldPassword,
+        newPassword,
+        confirmPassword
+      } as UpdatePasswordPayload),
+  });
+};
+
 // Member transactions hooks
 export const useMemberSimpananTransactions = () => {
   return useQuery({

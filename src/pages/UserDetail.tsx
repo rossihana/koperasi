@@ -17,8 +17,11 @@ import {
   Phone,
   ArrowUpRight,
   ArrowDownRight,
-  Edit
+  Edit,
+  Key
 } from 'lucide-react';
+import { ChangePasswordForm } from '@/components/ChangePasswordForm';
+import { EditMemberForm } from '@/components/EditMemberForm';
 
 const UserDetail = () => {
   const { id } = useParams();
@@ -100,12 +103,26 @@ const UserDetail = () => {
         </Link>
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Detail Anggota</h1>
-          <Link to={`/edit-financial/${id}`}>
-            <Button className="bg-green-600 hover:bg-green-700">
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Keuangan
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link to={`/edit-financial/${id}`}>
+              <Button className="bg-green-600 hover:bg-green-700">
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Keuangan
+              </Button>
+            </Link>
+            {member && (
+              <EditMemberForm
+                memberId={id || ''}
+                initialData={{
+                  nrp: member.nrp,
+                  nama: member.nama,
+                  jabatan: member.jabatan,
+                  status: member.status || 'aktif'
+                }}
+              />
+            )}
+            <ChangePasswordForm memberId={id} isAdmin={true} />
+          </div>
         </div>
       </div>
 

@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   // Member endpoints (admin)
   ADMIN_MEMBERS: '/admin/members',
   ADMIN_MEMBER_BY_ID: (id: string) => `/admin/members/${id}`,
+  ADMIN_MEMBER_PASSWORD: (id: string) => `/admin/members/${id}/password`,
   ADMIN_MEMBER_PIUTANG: (id: string) => `/admin/members/${id}/piutang`,
   ADMIN_MEMBER_PIUTANG_BY_ID: (memberId: string, piutangId: string) => `/admin/members/${memberId}/piutang/${piutangId}`,
   ADMIN_MEMBER_SIMPANAN: (id: string) => `/admin/members/${id}/simpanan`,
@@ -21,6 +22,7 @@ export const API_ENDPOINTS = {
   
   // Member endpoints (user)
   MEMBER_PROFILE: '/member/profile',
+  MEMBER_PASSWORD: '/member/password',
   MEMBER_ME_TRANSACTIONS_SIMPANAN: '/member/me/transactions/simpanan',
   MEMBER_ME_TRANSACTIONS_PIUTANG: '/member/me/transactions/piutang',
   MEMBER_ME_TRANSACTIONS_COMBINED: '/member/me/transactions/combined',
@@ -233,11 +235,19 @@ export interface SimpananTransactionsSummary {
 }
 
 export interface MemberSummary {
-  totalActivePiutangAmount: number;
-  totalPaidPiutangAmount: number;
+  totalPiutang: number;
   activePiutang: number;
-  paidPiutang: number;
+  completedPiutang: number;
+  totalActivePiutangAmount: number;
+  totalCompletedPiutangAmount: number;
+  totalSimpanan: number;
   simpananTransactions: SimpananTransactionsSummary;
+  simpananBreakdown?: {
+    simpananPokok: number;
+    simpananWajib: number;
+    simpananSukarela: number;
+    tabunganHariRaya: number;
+  };
 }
 
 export interface Member {
@@ -287,6 +297,14 @@ export interface Piutang {
   updatedAt: string;
 }
 
+export type PiutangTransactionType = 'payment' | 'pelunasan';
+
+export interface UpdatePiutangRequest extends Record<string, unknown> {
+  type: PiutangTransactionType;
+  amount?: number;
+  description: string;
+}
+
 export interface CreatePiutangRequest extends Record<string, unknown> {
   jenis: string;
   besarPinjaman: number;
@@ -296,15 +314,9 @@ export interface CreatePiutangRequest extends Record<string, unknown> {
   description: string;
 }
 
-export interface UpdatePiutangRequest extends Record<string, unknown> {
-  type: 'payment';
-  amount: number;
-  description: string;
-}
-
 // Simpanan types
 export interface UpdateSimpananRequest extends Record<string, unknown> {
-  type: 'setoran' | 'penarikan';
+  type: 'setoran' | 'penarikan' | 'koreksi';
   category: 'wajib' | 'sukarela' | 'pokok' | 'hari-raya';
   amount: number;
   description: string;

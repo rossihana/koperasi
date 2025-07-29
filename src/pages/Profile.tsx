@@ -16,9 +16,11 @@ import {
   Phone,
   ArrowUpRight,
   ArrowDownRight,
-  Loader2
+  Loader2,
+  Key
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ChangePasswordForm } from '@/components/ChangePasswordForm';
 
 interface Transaction {
   id: string;
@@ -106,6 +108,9 @@ const Profile = () => {
                   Bergabung: {new Date(profile.createdAt).toLocaleDateString('id-ID')}
                 </div>
               </div>
+              <div className="mt-4">
+                <ChangePasswordForm />
+              </div>
             </div>
           </div>
         </CardContent>
@@ -185,8 +190,16 @@ const Profile = () => {
                       .map((transaction: Transaction) => (
                         <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center">
-                            <div className="p-2 rounded-lg bg-green-100 mr-4">
-                              <ArrowUpRight className="w-5 h-5 text-green-600" />
+                            <div className={`p-2 rounded-lg mr-4 ${
+                              transaction.type === 'penarikan' 
+                                ? 'bg-red-100' 
+                                : 'bg-green-100'
+                            }`}>
+                              {transaction.type === 'penarikan' ? (
+                                <ArrowDownRight className="w-5 h-5 text-red-600" />
+                              ) : (
+                                <ArrowUpRight className="w-5 h-5 text-green-600" />
+                              )}
                             </div>
                             <div>
                               <p className="font-medium text-gray-900">{transaction.description}</p>
@@ -196,7 +209,11 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-green-600">
+                            <p className={`font-bold ${
+                              transaction.type === 'penarikan' 
+                                ? 'text-red-600' 
+                                : 'text-green-600'
+                            }`}>
                               {formatCurrency(transaction.amount)}
                             </p>
                           </div>
@@ -406,13 +423,19 @@ const Profile = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Piutang lunas</span>
                     <span className="font-bold text-gray-900">
-                      {profile.summary?.paidPiutang || 0}
+                      {profile.summary?.completedPiutang || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Total piutang lunas</span>
                     <span className="font-bold text-gray-900">
-                      {formatCurrency(profile.summary?.totalPaidPiutangAmount || 0)}
+                      {formatCurrency(profile.summary?.totalCompletedPiutangAmount || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-gray-600">Total semua piutang</span>
+                    <span className="font-bold text-gray-900">
+                      {profile.summary?.totalPiutang || 0}
                     </span>
                   </div>
                 </div>

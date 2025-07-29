@@ -113,13 +113,19 @@ export const ProfileSummaryContent = ({ profile, formatCurrency }: ProfileSummar
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Piutang lunas</span>
                 <span className="font-bold text-gray-900">
-                  {profile.summary?.paidPiutang || 0}
+                  {profile.summary?.completedPiutang || 0}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Total piutang lunas</span>
                 <span className="font-bold text-gray-900">
-                  {formatCurrency(profile.summary?.totalPaidPiutangAmount || 0)}
+                  {formatCurrency(profile.summary?.totalCompletedPiutangAmount || 0)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="text-gray-600">Total semua piutang</span>
+                <span className="font-bold text-gray-900">
+                  {profile.summary?.totalPiutang || 0}
                 </span>
               </div>
             </div>

@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log('Login response with old structure:', loginResponse);
       }
       
-      if (!loginResponse || !loginResponse.user) {
+      if (!loginResponse || !(loginResponse.user || loginResponse.data?.user || loginResponse.member || loginResponse.data?.member)) {
         console.error('Login response invalid:', loginResponse);
         setIsLoading(false);
         return false;

@@ -75,8 +75,10 @@ const UserDetail = () => {
   }
 
   const getStatusBadge = (status: string) => {
-    return status === 'active' ? (
+    return status === 'aktif' ? (
       <Badge className="bg-green-100 text-green-800">Aktif</Badge>
+    ) : status === 'suspend' ? (
+      <Badge className="bg-red-100 text-red-800">Suspend</Badge>
     ) : (
       <Badge variant="secondary">Tidak Aktif</Badge>
     );
@@ -137,7 +139,7 @@ const UserDetail = () => {
               <h2 className="text-3xl font-bold text-gray-900 mb-2">{member.nama}</h2>
               <div className="flex flex-wrap gap-2 mb-4">
                 {getRoleBadge(member.role)}
-                <Badge className="bg-green-100 text-green-800">Aktif</Badge>
+                {getStatusBadge(member.status)}
                 <Badge variant="outline">
                   NRP: {member.nrp}
                 </Badge>

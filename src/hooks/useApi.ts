@@ -344,10 +344,16 @@ export const useDeleteProduct = () => {
 };
 
 // Product hooks (user)
-export const useUserProducts = (page: number = 1) => {
+export const useUserProducts = (page: number = 1, kategori?: string) => {
   return useQuery({
-    queryKey: ['user-products', page],
-    queryFn: () => apiClient.get(`${API_ENDPOINTS.USER_PRODUCTS}?page=${page}`),
+    queryKey: ['user-products', page, kategori],
+    queryFn: () => {
+      let url = `${API_ENDPOINTS.USER_PRODUCTS}?page=${page}`;
+      if (kategori && kategori !== 'all') {
+        url += `&kategori=${kategori}`;
+      }
+      return apiClient.get(url);
+    },
   });
 };
 

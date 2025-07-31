@@ -45,13 +45,11 @@ const Shop = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 4;
 
-  // API hooks - menggunakan user products untuk tampilan
-  const { data: productsResponse, isLoading, error } = useUserProducts(currentPage);
+  // API hooks - menggunakan user products untuk tampilan dengan filter kategori
+  const { data: productsResponse, isLoading, error } = useUserProducts(currentPage, selectedCategory);
   
   // Extract products array from response with safety check
-  const products = Array.isArray(productsResponse?.data) 
-    ? productsResponse.data 
-    : productsResponse?.data?.products || productsResponse?.data || [];
+  const products = productsResponse?.data?.products || [];
     
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
@@ -59,17 +57,16 @@ const Shop = () => {
 
   const categories = [
     { value: 'all', label: 'Semua Kategori' },
-    { value: 'Makanan', label: 'Makanan & Minuman' },
-    { value: 'Elektronik', label: 'Elektronik' },
-    { value: 'Rumah Tangga', label: 'Rumah Tangga' },
-    { value: 'Pakaian', label: 'Pakaian' },
-    { value: 'Kesehatan', label: 'Kesehatan' }
+    { value: 'makanan', label: 'Makanan & Minuman' },
+    { value: 'elektronik', label: 'Elektronik' },
+    { value: 'rumah-tangga', label: 'Rumah Tangga' },
+    { value: 'pakaian', label: 'Pakaian' },
+    { value: 'kesehatan', label: 'Kesehatan' }
   ];
 
+  // Filter products by search term only since category filtering is handled by the API
   const filteredProducts = products.filter((product: Product) => {
-    const matchesSearch = product.namaProduk.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.namaKategori === selectedCategory;
-    return matchesSearch && matchesCategory;
+    return product.namaProduk.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   // Reset ke halaman 1 jika filter/search berubah
@@ -245,9 +242,9 @@ const Shop = () => {
               product={{
                 id: product.id,
                 name: product.namaProduk,
-                price: product.harga,
-                image: product.fotoProduk || product.foto || '/placeholder.svg',
-                category: product.namaKategori
+                price: parseInt(product.harga),
+                image: product.fotoProduk || '/placeholder.svg',
+                category: product.kategori?.namaKategori || ''
               }}
               isAdmin={user?.role === 'admin'}
               onEdit={user?.role === 'admin' ? () => openEditForm(product) : undefined}
@@ -259,7 +256,7 @@ const Shop = () => {
       )}
 
       {/* Pagination */}
-      {productsResponse && productsResponse.totalPages > 1 && (
+      {productsResponse?.data?.pagination && productsResponse.data.pagination.totalPages > 1 && (
         <div className="flex justify-center gap-2">
           <Button
             variant="outline"
@@ -269,12 +266,12 @@ const Shop = () => {
             Sebelumnya
           </Button>
           <span className="flex items-center px-4">
-            Halaman {currentPage} dari {productsResponse.totalPages}
+            Halaman {currentPage} dari {productsResponse.data.pagination.totalPages}
           </span>
           <Button
             variant="outline"
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, productsResponse.totalPages))}
-            disabled={currentPage === productsResponse.totalPages}
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, productsResponse.data.pagination.totalPages))}
+            disabled={currentPage === productsResponse.data.pagination.totalPages}
           >
             Selanjutnya
           </Button>
@@ -294,7 +291,7 @@ const Shop = () => {
               id: editingProduct.id,
               name: editingProduct.namaProduk,
               price: editingProduct.harga,
-              image: (editingProduct as any).fotoProduk || editingProduct.foto || '/placeholder.svg',
+              image: editingProduct.foto || '/placeholder.svg',
               category: editingProduct.namaKategori,
               description: editingProduct.deskripsi
             } : undefined}

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Upload, X } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface Product {
   id: string;
@@ -35,7 +36,6 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProp
   const [formData, setFormData] = useState({
     name: product?.name || '',
     price: product?.price.toString() || '',
-    image: product?.image || '',
     category: product?.category || '',
     description: product?.description || ''
   });
@@ -75,15 +75,20 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProp
     e.preventDefault();
     
     if (!formData.name || !formData.price || !formData.category) {
+      toast({
+        title: "Data tidak lengkap",
+        description: "Mohon isi semua field yang diperlukan",
+        variant: "destructive",
+      });
       return;
     }
 
-    const submitData: any = {
+    const submitData: Omit<Product, 'id'> & { imageFile?: File } = {
       name: formData.name,
       price: parseInt(formData.price),
-      image: '', // not used for upload
       category: formData.category,
-      description: formData.description
+      description: formData.description,
+      image: imagePreview || ''
     };
     if (imageFile) {
       submitData.imageFile = imageFile;
@@ -118,18 +123,20 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProp
 
       <div className="space-y-2">
         <Label htmlFor="category">Kategori</Label>
-        <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-          <SelectTrigger>
-            <SelectValue placeholder="Pilih kategori" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((category) => (
-              <SelectItem key={category.value} value={category.value}>
-                {category.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <select
+          id="category"
+          value={formData.category}
+          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+          className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          required
+        >
+          <option value="">Pilih kategori</option>
+          {categories.map((category) => (
+            <option key={category.value} value={category.value}>
+              {category.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-2">
@@ -178,19 +185,7 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProp
           </div>
         )}
 
-        {/* URL Input sebagai alternatif */}
-        <div className="mt-4">
-          <Label htmlFor="image">Atau masukkan URL Gambar</Label>
-          <Input
-            id="image"
-            value={formData.image}
-            onChange={(e) => {
-              setFormData(prev => ({ ...prev, image: e.target.value }));
-              setImagePreview(e.target.value);
-            }}
-            placeholder="https://images.unsplash.com/..."
-          />
-        </div>
+
       </div>
 
       {/* Hapus field stok */}

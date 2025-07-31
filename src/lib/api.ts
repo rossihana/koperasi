@@ -72,6 +72,13 @@ export const apiClient = {
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
+        if (response.status === 401) {
+          // Token expired or invalid
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          throw new Error('Token expired, silakan login kembali');
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
@@ -259,7 +266,8 @@ export interface Member {
   createdAt: string;
   activeLoanCount: number;
   hasActiveLoan: boolean;
-  simpanan?: MemberSimpanan;
+  simpanan?: MemberSimpanan | number;
+  piutang?: number;
   summary?: MemberSummary;
   joinDate?: string;
 }

@@ -158,9 +158,37 @@ const EditFinancial = () => {
       });
       setSavingsForm({ type: 'add', category: '', amount: '', description: '' });
     } catch (err) {
+      let errorMessage = 'Terjadi kesalahan';
+      if (err instanceof Error) {
+        // Customize error message for HTTP error status
+        if (err.message.startsWith('Update Simpanan Gagal! status:')) {
+          const statusCode = err.message.split(':')[1].trim();
+          switch (statusCode) {
+            case '400':
+              errorMessage = 'Permintaan tidak valid';
+              break;
+            case '401':
+              errorMessage = 'Anda tidak memiliki akses';
+              break;
+            case '403':
+              errorMessage = 'Akses ditolak';
+              break;
+            case '404':
+              errorMessage = 'Data tidak ditemukan';
+              break;
+            case '500':
+              errorMessage = 'Kesalahan server';
+              break;
+            default:
+              errorMessage = `Kesalahan HTTP (${statusCode})`;
+          }
+        } else {
+          errorMessage = err.message;
+        }
+      }
       toast({
         title: 'Gagal update simpanan',
-        description: err instanceof Error ? err.message : 'Terjadi kesalahan',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -470,6 +498,8 @@ const EditFinancial = () => {
                                 ? 'text-green-600' 
                                 : savingsForm.type === 'subtract'
                                 ? 'text-red-600'
+                                : savingsForm.type === 'correction'
+                                ? 'text-gray-600'
                                 : parseFloat(savingsForm.amount || '0') >= 0
                                 ? 'text-green-600'
                                 : 'text-red-600'

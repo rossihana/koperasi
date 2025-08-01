@@ -62,15 +62,15 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50 p-0 md:p-0">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50 p-4 md:p-0">
       <div className="w-full max-w-5xl min-h-[80vh] flex flex-col md:flex-row bg-white rounded-2xl shadow-2xl overflow-hidden">
         {/* Kiri: Logo besar & form login */}
-        <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-8 md:p-12">
+        <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-6 md:p-12">
           <div className="flex flex-col items-center w-full max-w-md">
-            <img src="/IMG_4716.PNG" alt="Logo Koperasi" className="w-40 h-40 object-contain mb-6" />
+            <img src="/IMG_4716.PNG" alt="Logo Koperasi" className="w-32 h-32 md:w-40 md:h-40 object-contain mb-6" />
             <Card className="w-full max-w-md shadow-none border-none">
               <CardHeader className="space-y-1 text-center">
-                <CardTitle className="text-3xl font-bold text-green-800">Selamat Datang</CardTitle>
+                <CardTitle className="text-2xl md:text-3xl font-bold text-green-800">Selamat Datang</CardTitle>
                 <CardDescription className="text-gray-600">
                   Masuk ke akun Koperasi Anda
                 </CardDescription>

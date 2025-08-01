@@ -85,7 +85,7 @@ const ProductDetail = () => {
   const kategoriNama = product.kategori?.namaKategori || kategoriMap[product.kategoriId] || 'Tanpa Kategori';
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-4 md:p-6">
       {/* Breadcrumb */}
       <div className="mb-6">
         <Link
@@ -97,23 +97,23 @@ const ProductDetail = () => {
         </Link>
       </div>
 
-      <div className="flex justify-center items-center min-h-[70vh] bg-gradient-to-br from-green-50 to-emerald-50 py-10">
-        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center">
+      <div className="flex justify-center items-center min-h-[70vh] bg-gradient-to-br from-green-50 to-emerald-50 py-10 px-4">
+        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-6 md:p-8 flex flex-col items-center">
           <div className="w-full flex justify-center mb-6">
             <img
               src={product.fotoProduk || '/placeholder.svg'}
               alt={product.namaProduk}
-              className="w-64 h-64 object-contain rounded-xl border border-gray-100 shadow-sm bg-gray-50"
+              className="w-48 h-48 md:w-64 md:h-64 object-contain rounded-xl border border-gray-100 shadow-sm bg-gray-50"
             />
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2 text-center tracking-tight">{product.namaProduk}</h1>
+          <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 mb-2 text-center tracking-tight">{product.namaProduk}</h1>
           {/* Kategori Produk */}
           <div className="mb-2">
             <span className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-3 py-1 rounded-full">
               {kategoriNama}
             </span>
           </div>
-          <div className="text-2xl md:text-3xl font-bold text-emerald-700 mb-2 text-center">{formatCurrency(product.harga)}</div>
+          <div className="text-xl md:text-3xl font-bold text-emerald-700 mb-2 text-center">{formatCurrency(product.harga)}</div>
           {product.stok !== undefined && (
             <div className="text-base font-medium text-gray-600 mb-4">Stok: <span className="font-semibold text-gray-800">{product.stok}</span></div>
           )}

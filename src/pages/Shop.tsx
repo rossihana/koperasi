@@ -189,15 +189,15 @@ const Shop = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-4 md:p-6">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Toko Koperasi</h1>
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between">
+        <div className="mb-4 md:mb-0">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Toko Koperasi</h1>
           <p className="text-gray-600">Temukan berbagai produk berkualitas untuk anggota koperasi</p>
         </div>
         {user?.role === 'admin' && (
-          <Button onClick={openAddForm} className="flex items-center gap-2">
+          <Button onClick={openAddForm} className="flex items-center gap-2 w-full md:w-auto">
             <Plus className="h-4 w-4" />
             Tambah Produk
           </Button>

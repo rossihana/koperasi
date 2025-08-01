@@ -67,7 +67,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50 p-4 md:p-6">
       <Card className="w-full max-w-md shadow-xl">
         {/* Tombol Back */}
         <button
@@ -78,18 +78,18 @@ const Register = () => {
           <ArrowLeft className="w-5 h-5" />
           Kembali
         </button>
-        <CardHeader className="space-y-1 text-center">
+        <CardHeader className="space-y-1 text-center px-4 md:px-6">
           <div className="flex justify-center mb-4">
-            <div className="w-32 h-32 flex items-center justify-center overflow-hidden">
-              <img src="/IMG_4716.PNG" alt="Logo Koperasi" className="w-32 h-32 object-contain" />
+            <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center overflow-hidden">
+              <img src="/IMG_4716.PNG" alt="Logo Koperasi" className="w-full h-full object-contain" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-green-800">Daftar Anggota</CardTitle>
+          <CardTitle className="text-xl md:text-2xl font-bold text-green-800">Daftar Anggota</CardTitle>
           <CardDescription className="text-gray-600">
             Bergabung dengan Koperasi
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 md:px-6 pb-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="nrp">NRP</Label>

@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { useMemberProfile, useMemberSimpananTransactions, useMemberPiutangTransactions } from '@/hooks/useApi';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,17 +82,16 @@ const Profile = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Profile Header */}
+    <div className="max-w-4xl mx-auto p-4 md:p-6">
       <Card className="mb-8">
-        <CardContent className="p-8">
-          <div className="flex items-start space-x-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center">
+        <CardContent className="p-4 md:p-8">
+          <div className="flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-6">
+            <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center self-center md:self-start">
               <User className="w-12 h-12 text-white" />
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile.nama}</h1>
-              <div className="flex flex-wrap gap-2 mb-4">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center md:text-left">{profile.nama}</h1>
+              <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
                 <Badge variant="secondary" className="bg-green-100 text-green-800">
                   {profile.jabatan}
                 </Badge>
@@ -108,7 +108,7 @@ const Profile = () => {
                   Bergabung: {new Date(profile.createdAt).toLocaleDateString('id-ID')}
                 </div>
               </div>
-              <div className="mt-4">
+              <div className="mt-4 flex justify-center md:justify-start">
                 <ChangePasswordForm />
               </div>
             </div>
@@ -171,90 +171,100 @@ const Profile = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {isLoadingSimpanan ? (
-                  <div className="flex items-center justify-center p-4">
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                    <span>Memuat data...</span>
-                  </div>
-                ) : !simpananData?.data?.transactions || simpananData.data.transactions.length === 0 ? (
-                  <div className="text-center p-4 text-gray-500">
-                    Belum ada transaksi simpanan
-                  </div>
-                ) : (
-                  <>
-                    {simpananData.data.transactions
-                      .slice(
-                        (currentSimpananPage - 1) * transactionsPerPage,
-                        currentSimpananPage * transactionsPerPage
-                      )
-                      .map((transaction: Transaction) => (
-                        <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <div className="flex items-center">
-                            <div className={`p-2 rounded-lg mr-4 ${
-                              transaction.type === 'penarikan' 
-                                ? 'bg-red-100' 
-                                : 'bg-green-100'
-                            }`}>
-                              {transaction.type === 'penarikan' ? (
-                                <ArrowDownRight className="w-5 h-5 text-red-600" />
-                              ) : (
-                                <ArrowUpRight className="w-5 h-5 text-green-600" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900">{transaction.description}</p>
-                              <p className="text-sm text-gray-500">
-                                Simpanan {transaction.category} • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className={`font-bold ${
-                              transaction.type === 'penarikan' 
-                                ? 'text-red-600' 
-                                : 'text-green-600'
-                            }`}>
-                              {formatCurrency(transaction.amount)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    
-                    {/* Pagination Controls */}
-                    {simpananData.data.transactions.length > transactionsPerPage && (
-                      <div className="flex justify-center items-center space-x-2 pt-4">
-                        <button
-                          onClick={() => setCurrentSimpananPage(page => Math.max(1, page - 1))}
-                          disabled={currentSimpananPage === 1}
-                          className={`px-3 py-1 rounded-md ${
-                            currentSimpananPage === 1
-                              ? 'bg-gray-100 text-gray-400'
-                              : 'bg-green-50 text-green-600 hover:bg-green-100'
-                          }`}
-                        >
-                          Sebelumnya
-                        </button>
-                        <span className="text-sm text-gray-600">
-                          Halaman {currentSimpananPage} dari{' '}
-                          {Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
-                        </span>
-                        <button
-                          onClick={() => setCurrentSimpananPage(page => 
-                            Math.min(Math.ceil(simpananData.data.transactions.length / transactionsPerPage), page + 1)
-                          )}
-                          disabled={currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
-                          className={`px-3 py-1 rounded-md ${
-                            currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)
-                              ? 'bg-gray-100 text-gray-400'
-                              : 'bg-green-50 text-green-600 hover:bg-green-100'
-                          }`}
-                        >
-                          Selanjutnya
-                        </button>
+                {(() => {
+                  if (isLoadingSimpanan) {
+                    return (
+                      <div className="flex items-center justify-center p-4">
+                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        <span>Memuat data...</span>
                       </div>
-                    )}
-                  </>
-                )}
+                    );
+                  } else if (!simpananData?.data?.transactions || simpananData.data.transactions.length === 0) {
+                    return (
+                      <div className="text-center p-4 text-gray-500">
+                        Belum ada transaksi simpanan
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <>
+                        {simpananData.data.transactions
+                          .slice(
+                            (currentSimpananPage - 1) * transactionsPerPage,
+                            currentSimpananPage * transactionsPerPage
+                          )
+                          .map((transaction: Transaction) => {
+                            return (
+                              <div key={transaction.id} className={`flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-lg ${
+                                transaction.type === 'koreksi' ? 'bg-gray-300' : 'bg-gray-50'
+                              }`}>
+                                <div className="flex items-center mb-2 md:mb-0">
+                                  <div className={`p-2 rounded-lg mr-4 ${
+                                    transaction.type === 'penarikan' 
+                                      ? 'bg-red-100' 
+                                      : 'bg-green-100'
+                                  }`}>
+                                    {transaction.type === 'penarikan' ? (
+                                      <ArrowDownRight className="w-5 h-5 text-red-600" />
+                                    ) : (
+                                      <ArrowUpRight className="w-5 h-5 text-green-600" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-gray-900">{transaction.description}</p>
+                                    <p className="text-sm text-gray-500">
+                                      Simpanan {transaction.category} • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right self-end md:self-auto">
+                                  <p className={`font-bold ${
+                                    transaction.type === 'penarikan' 
+                                      ? 'text-red-600' 
+                                      : 'text-green-600'
+                                  }`}>
+                                    {formatCurrency(transaction.amount)}
+                                  </p>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        {simpananData.data.transactions.length > transactionsPerPage && (
+                          <div className="flex justify-center items-center space-x-2 pt-4 border-t border-gray-200">
+                            <button
+                              onClick={() => setCurrentSimpananPage(page => Math.max(1, page - 1))}
+                              disabled={currentSimpananPage === 1}
+                              className={`px-3 py-1 rounded-md ${
+                                currentSimpananPage === 1
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  : 'bg-green-50 text-green-600 hover:bg-green-100'
+                              }`}
+                            >
+                              Sebelumnya
+                            </button>
+                            <span className="text-sm text-gray-600">
+                              Halaman {currentSimpananPage} dari{' '}
+                              {Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
+                            </span>
+                            <button
+                              onClick={() => setCurrentSimpananPage(page => 
+                                Math.min(Math.ceil(simpananData.data.transactions.length / transactionsPerPage), page + 1)
+                              )}
+                              disabled={currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
+                              className={`px-3 py-1 rounded-md ${
+                                currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  : 'bg-green-50 text-green-600 hover:bg-green-100'
+                              }`}
+                            >
+                              Selanjutnya
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  }
+                })()}
               </div>
             </CardContent>
           </Card>

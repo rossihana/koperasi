@@ -159,10 +159,16 @@ export const useUpdateOwnPassword = () => {
 };
 
 // Member transactions hooks
-export const useMemberSimpananTransactions = () => {
+export const useMemberSimpananTransactions = (limit?: number) => {
   return useQuery({
-    queryKey: ['member-simpanan-transactions'],
-    queryFn: () => apiClient.get(API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_SIMPANAN),
+    queryKey: ['member-simpanan-transactions', limit],
+    queryFn: () => {
+      let url = API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_SIMPANAN;
+      if (limit !== undefined) {
+        url += `?limit=${limit}`;
+      }
+      return apiClient.get(url);
+    },
   });
 };
 
@@ -233,10 +239,16 @@ export const useUpdateSimpanan = () => {
 };
 
 // Transaction hooks (admin)
-export const useMemberTransactionsSimpanan = (memberId: string) => {
+export const useMemberTransactionsSimpanan = (memberId: string, limit?: number) => {
   return useQuery({
-    queryKey: ['transactions-simpanan', memberId],
-    queryFn: () => apiClient.get(API_ENDPOINTS.ADMIN_MEMBER_TRANSACTIONS_SIMPANAN(memberId)),
+    queryKey: ['transactions-simpanan', memberId, limit],
+    queryFn: () => {
+      let url = API_ENDPOINTS.ADMIN_MEMBER_TRANSACTIONS_SIMPANAN(memberId);
+      if (limit !== undefined) {
+        url += `?limit=${limit}`;
+      }
+      return apiClient.get(url);
+    },
     enabled: !!memberId,
   });
 };

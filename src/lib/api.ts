@@ -72,6 +72,18 @@ export const apiClient = {
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
+        let errorDetail = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorDetail = errorData.message;
+          } else if (errorData.error) {
+            errorDetail = errorData.error;
+          }
+        } catch (parseError) {
+          console.warn('Could not parse error response as JSON:', parseError);
+        }
+
         if (response.status === 401) {
           // Token expired or invalid
           localStorage.removeItem('token');
@@ -79,7 +91,7 @@ export const apiClient = {
           window.location.href = '/login';
           throw new Error('Token expired, silakan login kembali');
         }
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(errorDetail);
       }
       
       const responseData = await response.json();
@@ -325,7 +337,7 @@ export interface CreatePiutangRequest extends Record<string, unknown> {
 // Simpanan types
 export interface UpdateSimpananRequest extends Record<string, unknown> {
   type: 'setoran' | 'penarikan' | 'koreksi';
-  category: 'wajib' | 'sukarela' | 'pokok' | 'hari-raya';
+  category: 'wajib' | 'sukarela' | 'pokok' | 'thr';
   amount: number;
   description: string;
 }

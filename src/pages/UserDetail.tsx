@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useMember } from '@/hooks/useApi';
+import { useMember, useMemberTransactionsSimpanan } from '@/hooks/useApi';
 import { Loader2 } from 'lucide-react';
 import {
   ArrowLeft,
@@ -29,6 +29,7 @@ import React, { useState } from 'react';
 const UserDetail = () => {
   const { id } = useParams();
   const { data: memberResponse, isLoading, error } = useMember(id || '');
+  const { data: simpananData, isLoading: isLoadingSimpanan } = useMemberTransactionsSimpanan(id || '', 100);
 
   // Extract member data from response
   const member = memberResponse?.data || memberResponse;
@@ -221,64 +222,114 @@ const UserDetail = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {member.simpanan?.transactions?.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className={`flex items-center justify-between p-4 rounded-lg ${
-                      transaction.type === 'penarikan'
-                        ? 'bg-red-50'
-                        : transaction.type === 'koreksi'
-                        ? 'bg-gray-100'
-                        : 'bg-green-50'
-                    }`}>
-                    <div className="flex items-center">
-                      <div
-                        className={`p-2 rounded-lg ${
-                          transaction.type === 'penarikan'
-                            ? 'bg-red-100'
-                            : transaction.type === 'koreksi'
-                            ? 'bg-gray-200'
-                            : 'bg-green-100'
-                        } mr-4`}
-                      >
-                        {transaction.type === 'penarikan' ? (
-                          <ArrowDownRight className="w-5 h-5 text-red-600" />
-                        ) : transaction.type === 'koreksi' ? (
-                          <ArrowRight className="w-5 h-5 text-gray-600" />
-                        ) : (
-                          <ArrowUpRight className="w-5 h-5 text-green-600" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{transaction.description}</p>
-                        <p className="text-sm text-gray-500">{formatDate(transaction.createdAt)}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p
-                        className={`font-bold ${
-                          transaction.type === 'penarikan'
-                            ? 'text-red-600'
-                            : transaction.type === 'koreksi'
-                            ? 'text-gray-900'
-                            : 'text-green-600'
-                        }`}
-                      >
-                        {transaction.type === 'penarikan'
-                          ? '- '
-                          : transaction.type === 'koreksi'
-                          ? ''
-                          : '+ '}{formatCurrency(Math.abs(typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : transaction.amount))}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Sblm: {formatCurrency(transaction.balanceBefore)}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Stlh: {formatCurrency(transaction.balanceAfter)}
-                      </p>
-                    </div>
+                {isLoadingSimpanan ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <span>Memuat data...</span>
                   </div>
-                ))}
+                ) : !simpananData?.data?.transactions || simpananData.data.transactions.length === 0 ? (
+                  <div className="text-center p-4 text-gray-500">
+                    Belum ada transaksi simpanan
+                  </div>
+                ) : (
+                  <>
+                    {simpananData.data.transactions
+                      .slice(
+                        (currentSimpananPage - 1) * transactionsPerPage,
+                        currentSimpananPage * transactionsPerPage
+                      )
+                      .map((transaction) => (
+                        <div
+                          key={transaction.id}
+                          className={`flex items-center justify-between p-4 rounded-lg ${
+                            transaction.type === 'penarikan'
+                              ? 'bg-red-50'
+                              : transaction.type === 'koreksi'
+                              ? 'bg-gray-100'
+                              : 'bg-green-50'
+                          }`}>
+                          <div className="flex items-center">
+                            <div
+                              className={`p-2 rounded-lg ${
+                                transaction.type === 'penarikan'
+                                  ? 'bg-red-100'
+                                  : transaction.type === 'koreksi'
+                                  ? 'bg-gray-200'
+                                  : 'bg-green-100'
+                              } mr-4`}
+                            >
+                              {transaction.type === 'penarikan' ? (
+                                <ArrowDownRight className="w-5 h-5 text-red-600" />
+                              ) : transaction.type === 'koreksi' ? (
+                                <ArrowRight className="w-5 h-5 text-gray-600" />
+                              ) : (
+                                <ArrowUpRight className="w-5 h-5 text-green-600" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{transaction.description}</p>
+                              <p className="text-sm text-gray-500">{formatDate(transaction.createdAt)}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p
+                              className={`font-bold ${
+                                transaction.type === 'penarikan'
+                                  ? 'text-red-600'
+                                  : transaction.type === 'koreksi'
+                                  ? 'text-gray-900'
+                                  : 'text-green-600'
+                              }`}
+                            >
+                              {transaction.type === 'penarikan'
+                                ? '- '
+                                : transaction.type === 'koreksi'
+                                ? ''
+                                : '+ '}{formatCurrency(Math.abs(typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : transaction.amount))}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Sebelum: {formatCurrency(transaction.balanceBefore)}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Setelah: {formatCurrency(transaction.balanceAfter)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    {simpananData.data.transactions.length > transactionsPerPage && (
+                      <div className="flex justify-center items-center space-x-2 pt-4 border-t border-gray-200">
+                        <button
+                          onClick={() => setCurrentSimpananPage(page => Math.max(1, page - 1))}
+                          disabled={currentSimpananPage === 1}
+                          className={`px-3 py-1 rounded-md ${
+                            currentSimpananPage === 1
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-green-50 text-green-600 hover:bg-green-100'
+                          }`}
+                        >
+                          Sebelumnya
+                        </button>
+                        <span className="text-sm text-gray-600">
+                          Halaman {currentSimpananPage} dari{' '}
+                          {Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
+                        </span>
+                        <button
+                          onClick={() => setCurrentSimpananPage(page => 
+                            Math.min(Math.ceil(simpananData.data.transactions.length / transactionsPerPage), page + 1)
+                          )}
+                          disabled={currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
+                          className={`px-3 py-1 rounded-md ${
+                            currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-green-50 text-green-600 hover:bg-green-100'
+                          }`}
+                        >
+                          Selanjutnya
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -379,10 +430,30 @@ const UserDetail = () => {
                   <span className="text-gray-600">Tabungan Hari Raya</span>
                   <span className="font-medium">{formatCurrency(member.summary?.simpananBreakdown?.tabunganHariRaya || 0)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Jumlah transaksi</span>
-                  <span className="font-medium">{member.summary?.simpananTransactions?.totalTransactions || 0}</span>
-                </div>
+                <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-gray-600">Jumlah transaksi</span>
+                    <span className="font-bold text-gray-900">
+                      {simpananData?.data?.transactions?.length || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Transaksi Setoran</span>
+                    <span className="font-bold text-gray-900">
+                      {simpananData?.data?.transactions?.filter(t => t.type === 'setoran').length || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Transaksi Penarikan</span>
+                    <span className="font-bold text-gray-900">
+                      {simpananData?.data?.transactions?.filter(t => t.type === 'penarikan').length || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Transaksi Koreksi</span>
+                    <span className="font-bold text-gray-900">
+                      {simpananData?.data?.transactions?.filter(t => t.type === 'koreksi').length || 0}
+                    </span>
+                  </div>
               </div>
             </CardContent>
           </Card>

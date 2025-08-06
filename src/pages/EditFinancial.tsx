@@ -77,7 +77,7 @@ const EditFinancial = () => {
     { value: 'pokok', label: 'Simpanan Pokok' },
     { value: 'wajib', label: 'Simpanan Wajib' },
     { value: 'sukarela', label: 'Simpanan Sukarela' },
-    { value: 'hari-raya', label: 'Simpanan Hari Raya' }
+        { value: 'thr', label: 'Simpanan Hari Raya' }
   ];
 
   // Ganti formatCurrency agar support string/number
@@ -147,7 +147,7 @@ const EditFinancial = () => {
 
       const payload = {
         type: requestType,
-        category: savingsForm.category as 'wajib' | 'sukarela' | 'pokok' | 'hari-raya',
+        category: savingsForm.category as 'wajib' | 'sukarela' | 'pokok' | 'thr',
         amount: amount,
         description: savingsForm.description,
       };
@@ -158,6 +158,7 @@ const EditFinancial = () => {
       });
       setSavingsForm({ type: 'add', category: '', amount: '', description: '' });
     } catch (err) {
+      console.error('Error updating simpanan:', err); // Tambahkan logging detail
       let errorMessage = 'Terjadi kesalahan';
       if (err instanceof Error) {
         // Customize error message for HTTP error status

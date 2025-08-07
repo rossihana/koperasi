@@ -26,17 +26,17 @@ export const useLogout = () => {
 };
 
 // Member hooks (admin)
-export const useMembers = () => {
+export const useMembers = (page: number = 1, limit: number = 10) => {
   return useQuery({
-    queryKey: ['members'],
-    queryFn: () => apiClient.get(API_ENDPOINTS.ADMIN_MEMBERS),
+    queryKey: ['members', page, limit],
+    queryFn: () => apiClient.get(`${API_ENDPOINTS.ADMIN_MEMBERS}?page=${page}&limit=${limit}`),
     retry: 1, // Only retry once
     retryDelay: 1000,
   });
 };
 
 // Hook untuk mendapatkan daftar anggota yang bisa diakses oleh semua user
-export const useMembersPublic = (page: number = 1) => {
+export const useMembersPublic = (page: number = 1, enabled: boolean = true) => {
   return useQuery({
     queryKey: ['members-public', page],
     queryFn: async () => {
@@ -61,6 +61,7 @@ export const useMembersPublic = (page: number = 1) => {
         };
       }
     },
+    enabled: enabled, // Conditionally enable/disable the query
     retry: false, // Don't retry
   });
 };
@@ -159,23 +160,23 @@ export const useUpdateOwnPassword = () => {
 };
 
 // Member transactions hooks
-export const useMemberSimpananTransactions = (limit?: number) => {
+export const useMemberSimpananTransactions = (page: number = 1, limit: number = 5) => {
   return useQuery({
-    queryKey: ['member-simpanan-transactions', limit],
+    queryKey: ['member-simpanan-transactions', page, limit],
     queryFn: () => {
-      let url = API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_SIMPANAN;
-      if (limit !== undefined) {
-        url += `?limit=${limit}`;
-      }
+      let url = `${API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_SIMPANAN}?page=${page}&limit=${limit}`;
       return apiClient.get(url);
     },
   });
 };
 
-export const useMemberPiutangTransactions = () => {
+export const useMemberPiutangTransactions = (page: number = 1, limit: number = 5) => {
   return useQuery({
-    queryKey: ['member-piutang-transactions'],
-    queryFn: () => apiClient.get(API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_PIUTANG),
+    queryKey: ['member-piutang-transactions', page, limit],
+    queryFn: () => {
+      let url = `${API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_PIUTANG}?page=${page}&limit=${limit}`;
+      return apiClient.get(url);
+    },
   });
 };
 
@@ -239,24 +240,24 @@ export const useUpdateSimpanan = () => {
 };
 
 // Transaction hooks (admin)
-export const useMemberTransactionsSimpanan = (memberId: string, limit?: number) => {
-  return useQuery({
-    queryKey: ['transactions-simpanan', memberId, limit],
+export const useMemberTransactionsSimpanan = (memberId: string, page: number = 1, limit: number = 5) => {
+  return useQuery<ApiResponse<SimpananTransactionListResponse>>({
+    queryKey: ['transactions-simpanan', memberId, page, limit],
     queryFn: () => {
-      let url = API_ENDPOINTS.ADMIN_MEMBER_TRANSACTIONS_SIMPANAN(memberId);
-      if (limit !== undefined) {
-        url += `?limit=${limit}`;
-      }
+      const url = `${API_ENDPOINTS.ADMIN_MEMBER_TRANSACTIONS_SIMPANAN(memberId)}?page=${page}&limit=${limit}`;
       return apiClient.get(url);
     },
     enabled: !!memberId,
   });
 };
 
-export const useMemberTransactionsPiutang = (memberId: string) => {
+export const useMemberTransactionsPiutang = (memberId: string, page: number = 1, limit: number = 5) => {
   return useQuery({
-    queryKey: ['transactions-piutang', memberId],
-    queryFn: () => apiClient.get(API_ENDPOINTS.ADMIN_MEMBER_TRANSACTIONS_PIUTANG(memberId)),
+    queryKey: ['transactions-piutang', memberId, page, limit],
+    queryFn: () => {
+      let url = `${API_ENDPOINTS.ADMIN_MEMBER_TRANSACTIONS_PIUTANG(memberId)}?page=${page}&limit=${limit}`;
+      return apiClient.get(url);
+    },
     enabled: !!memberId,
   });
 };
@@ -284,10 +285,13 @@ export const useMyTransactionsPiutang = () => {
   });
 };
 
-export const useMyTransactionsCombined = () => {
+export const useMyTransactionsCombined = (page: number = 1, limit: number = 5) => {
   return useQuery({
-    queryKey: ['my-transactions-combined'],
-    queryFn: () => apiClient.get(API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_COMBINED),
+    queryKey: ['my-transactions-combined', page, limit],
+    queryFn: () => {
+      const url = `${API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_COMBINED}?page=${page}&limit=${limit}`;
+      return apiClient.get(url);
+    },
   });
 };
 
@@ -360,10 +364,7 @@ export const useUserProducts = (page: number = 1, kategori?: string) => {
   return useQuery({
     queryKey: ['user-products', page, kategori],
     queryFn: () => {
-      let url = `${API_ENDPOINTS.USER_PRODUCTS}?page=${page}`;
-      if (kategori && kategori !== 'all') {
-        url += `&kategori=${kategori}`;
-      }
+      const url = `${API_ENDPOINTS.USER_PRODUCTS}?page=${page}${kategori && kategori !== 'all' ? `&kategori=${kategori}` : ''}`;
       return apiClient.get(url);
     },
   });

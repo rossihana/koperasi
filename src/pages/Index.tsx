@@ -21,6 +21,8 @@ const Index = () => {
   const { data: profileResponse, isLoading: isProfileLoading, error: profileError } = useMemberProfile();
   const profile = profileResponse?.data || profileResponse;
 
+  console.log("Profile data on Index page:", profile);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -29,7 +31,7 @@ const Index = () => {
   };
 
   // Ambil data anggota dan produk
-  const { data: membersResponse } = useMembersPublic(1);
+  const { data: membersResponse } = useMembersPublic(1, user?.role === 'admin');
   const { data: productsResponse } = useUserProducts(1);
 
   // Hitung total anggota dan produk
@@ -56,7 +58,7 @@ const Index = () => {
   // Fetch member transactions
   const [currentPage, setCurrentPage] = useState(1);
   const transactionsPerPage = 5;
-  const { data: transactionsResponse } = useMyTransactionsCombined();
+  const { data: transactionsResponse } = useMyTransactionsCombined(currentPage, transactionsPerPage);
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -74,7 +76,7 @@ const Index = () => {
               <div className="flex items-center space-x-4">
                 <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                   <Calendar className="w-4 h-4 mr-1" />
-                  Bergabung: {new Date(user?.joinDate || '').toLocaleDateString('id-ID')}
+                  Bergabung: {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('id-ID') : '-'}
                 </Badge>
               </div>
             </div>
@@ -161,9 +163,7 @@ const Index = () => {
               </div>
             ) : (
               <>
-                {transactionsResponse.data.transactions
-                  .slice((currentPage - 1) * transactionsPerPage, currentPage * transactionsPerPage)
-                  .map((transaction) => (
+                {transactionsResponse.data.transactions.map((transaction) => (
                     <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center">
                         <div className={`p-2 rounded-lg mr-4 ${
@@ -193,13 +193,13 @@ const Index = () => {
                   ))}
                   
                 {/* Pagination */}
-                {transactionsResponse.data.transactions.length > transactionsPerPage && (
+                {transactionsResponse.data.pagination.totalPages > 1 && (
                   <div className="flex justify-center items-center space-x-2 pt-4">
                     <button
                       onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
-                      disabled={currentPage === 1}
+                      disabled={transactionsResponse.data.pagination.currentPage === 1}
                       className={`px-3 py-1 rounded-md ${
-                        currentPage === 1 
+                        transactionsResponse.data.pagination.currentPage === 1 
                           ? 'bg-gray-100 text-gray-400' 
                           : 'bg-green-50 text-green-600 hover:bg-green-100'
                       }`}
@@ -207,17 +207,17 @@ const Index = () => {
                       Sebelumnya
                     </button>
                     <span className="text-sm text-gray-600">
-                      Halaman {currentPage} dari{' '}
-                      {Math.ceil(transactionsResponse.data.transactions.length / transactionsPerPage)}
+                      Halaman {transactionsResponse.data.pagination.currentPage} dari{' '}
+                      {transactionsResponse.data.pagination.totalPages}
                     </span>
                     <button
                       onClick={() => setCurrentPage(page => Math.min(
-                        Math.ceil(transactionsResponse.data.transactions.length / transactionsPerPage),
+                        transactionsResponse.data.pagination.totalPages,
                         page + 1
                       ))}
-                      disabled={currentPage === Math.ceil(transactionsResponse.data.transactions.length / transactionsPerPage)}
+                      disabled={transactionsResponse.data.pagination.currentPage === transactionsResponse.data.pagination.totalPages}
                       className={`px-3 py-1 rounded-md ${
-                        currentPage === Math.ceil(transactionsResponse.data.transactions.length / transactionsPerPage)
+                        transactionsResponse.data.pagination.currentPage === transactionsResponse.data.pagination.totalPages
                           ? 'bg-gray-100 text-gray-400'
                           : 'bg-green-50 text-green-600 hover:bg-green-100'
                       }`}

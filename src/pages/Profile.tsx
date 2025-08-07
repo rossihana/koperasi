@@ -36,16 +36,16 @@ interface Transaction {
 }
 
 const Profile = () => {
-  const { data: profileResponse, isLoading, error } = useMemberProfile();
-  const { data: simpananData, isLoading: isLoadingSimpanan } = useMemberSimpananTransactions(100);
-  const { data: piutangData, isLoading: isLoadingPiutang } = useMemberPiutangTransactions();
-
   // Pagination state for simpanan
   const [currentSimpananPage, setCurrentSimpananPage] = useState(1);
   const transactionsPerPage = 5;
   
   // Pagination state for piutang
   const [currentPiutangPage, setCurrentPiutangPage] = useState(1);
+
+  const { data: profileResponse, isLoading, error } = useMemberProfile();
+  const { data: simpananData, isLoading: isLoadingSimpanan } = useMemberSimpananTransactions(currentSimpananPage, transactionsPerPage);
+  const { data: piutangData, isLoading: isLoadingPiutang } = useMemberPiutangTransactions(currentPiutangPage, transactionsPerPage);
   const profile = profileResponse?.data || profileResponse;
 
   console.log("Simpanan Transactions Summary from Backend:", profile?.summary?.simpananTransactions);
@@ -195,12 +195,7 @@ const Profile = () => {
                   </div>
                 ) : (
                   <>
-                    {simpananData.data.transactions
-                      .slice(
-                        (currentSimpananPage - 1) * transactionsPerPage,
-                        currentSimpananPage * transactionsPerPage
-                      )
-                      .map((transaction: Transaction) => (
+                    {simpananData.data.transactions.map((transaction: Transaction) => (
                         <div
                           key={transaction.id}
                           className={`flex items-center justify-between p-4 rounded-lg ${
@@ -258,13 +253,13 @@ const Profile = () => {
                           </div>
                         </div>
                       ))}
-                    {simpananData.data.transactions.length > transactionsPerPage && (
+                    {simpananData.data.pagination && simpananData.data.pagination.totalPages > 1 && (
                       <div className="flex justify-center items-center space-x-2 pt-4 border-t border-gray-200">
                         <button
                           onClick={() => setCurrentSimpananPage(page => Math.max(1, page - 1))}
-                          disabled={currentSimpananPage === 1}
+                          disabled={simpananData.data.pagination.currentPage === 1}
                           className={`px-3 py-1 rounded-md ${
-                            currentSimpananPage === 1
+                            simpananData.data.pagination.currentPage === 1
                               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                               : 'bg-green-50 text-green-600 hover:bg-green-100'
                           }`}
@@ -272,16 +267,16 @@ const Profile = () => {
                           Sebelumnya
                         </button>
                         <span className="text-sm text-gray-600">
-                          Halaman {currentSimpananPage} dari{' '}
-                          {Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
+                          Halaman {simpananData.data.pagination.currentPage} dari{' '}
+                          {simpananData.data.pagination.totalPages}
                         </span>
                         <button
                           onClick={() => setCurrentSimpananPage(page => 
-                            Math.min(Math.ceil(simpananData.data.transactions.length / transactionsPerPage), page + 1)
+                            Math.min(simpananData.data.pagination.totalPages, page + 1)
                           )}
-                          disabled={currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)}
+                          disabled={simpananData.data.pagination.currentPage === simpananData.data.pagination.totalPages}
                           className={`px-3 py-1 rounded-md ${
-                            currentSimpananPage === Math.ceil(simpananData.data.transactions.length / transactionsPerPage)
+                            simpananData.data.pagination.currentPage === simpananData.data.pagination.totalPages
                               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                               : 'bg-green-50 text-green-600 hover:bg-green-100'
                           }`}
@@ -318,10 +313,6 @@ const Profile = () => {
                 ) : (
                   <>
                     {piutangData.data.transactions
-                      .slice(
-                        (currentPiutangPage - 1) * transactionsPerPage,
-                        currentPiutangPage * transactionsPerPage
-                      )
                       .map((transaction: Transaction) => (
                         <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex items-center">
@@ -344,13 +335,13 @@ const Profile = () => {
                       ))}
                     
                     {/* Pagination Controls */}
-                    {piutangData.data.transactions.length > transactionsPerPage && (
+                    {piutangData.data.pagination && piutangData.data.pagination.totalPages > 1 && (
                       <div className="flex justify-center items-center space-x-2 pt-4">
                         <button
                           onClick={() => setCurrentPiutangPage(page => Math.max(1, page - 1))}
-                          disabled={currentPiutangPage === 1}
+                          disabled={piutangData.data.pagination.currentPage === 1}
                           className={`px-3 py-1 rounded-md ${
-                            currentPiutangPage === 1
+                            piutangData.data.pagination.currentPage === 1
                               ? 'bg-gray-100 text-gray-400'
                               : 'bg-red-50 text-red-600 hover:bg-red-100'
                           }`}
@@ -358,16 +349,16 @@ const Profile = () => {
                           Sebelumnya
                         </button>
                         <span className="text-sm text-gray-600">
-                          Halaman {currentPiutangPage} dari{' '}
-                          {Math.ceil(piutangData.data.transactions.length / transactionsPerPage)}
+                          Halaman {piutangData.data.pagination.currentPage} dari{' '}
+                          {piutangData.data.pagination.totalPages}
                         </span>
                         <button
                           onClick={() => setCurrentPiutangPage(page => 
-                            Math.min(Math.ceil(piutangData.data.transactions.length / transactionsPerPage), page + 1)
+                            Math.min(piutangData.data.pagination.totalPages, page + 1)
                           )}
-                          disabled={currentPiutangPage === Math.ceil(piutangData.data.transactions.length / transactionsPerPage)}
+                          disabled={piutangData.data.pagination.currentPage === piutangData.data.pagination.totalPages}
                           className={`px-3 py-1 rounded-md ${
-                            currentPiutangPage === Math.ceil(piutangData.data.transactions.length / transactionsPerPage)
+                            piutangData.data.pagination.currentPage === piutangData.data.pagination.totalPages
                               ? 'bg-gray-100 text-gray-400'
                               : 'bg-red-50 text-red-600 hover:bg-red-100'
                           }`}
@@ -384,119 +375,11 @@ const Profile = () => {
         </TabsContent>
 
         <TabsContent value="summary">
-          <div className="space-y-6">
-            {/* Ringkasan Simpanan Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-green-700">
-                  <Wallet className="w-5 h-5 mr-2" />
-                  Ringkasan Simpanan
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total simpanan</span>
-                    <span className="font-bold text-gray-900">
-                      {formatCurrency(profile.simpanan?.totalSimpanan || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Simpanan Pokok</span>
-                    <span className="font-bold text-gray-900">
-                      {formatCurrency(profile.simpanan?.simpananPokok || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Simpanan Wajib</span>
-                    <span className="font-bold text-gray-900">
-                      {formatCurrency(profile.simpanan?.simpananWajib || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Simpanan Sukarela</span>
-                    <span className="font-bold text-gray-900">
-                      {formatCurrency(profile.simpanan?.simpananSukarela || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Tabungan Hari Raya</span>
-                    <span className="font-bold text-gray-900">
-                      {formatCurrency(profile.simpanan?.tabunganHariRaya || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center pt-2 border-t">
-                    <span className="text-gray-600">Jumlah transaksi</span>
-                    <span className="font-bold text-gray-900">
-                      {simpananData?.data?.transactions?.length || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Transaksi Setoran</span>
-                    <span className="font-bold text-gray-900">
-                      {simpananData?.data?.transactions?.filter(t => t.type === 'setoran').length || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Transaksi Penarikan</span>
-                    <span className="font-bold text-gray-900">
-                      {simpananData?.data?.transactions?.filter(t => t.type === 'penarikan').length || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Transaksi Koreksi</span>
-                    <span className="font-bold text-gray-900">
-                      {simpananData?.data?.transactions?.filter(t => t.type === 'koreksi').length || 0}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Ringkasan Piutang Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-red-700">
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Ringkasan Piutang
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total piutang aktif</span>
-                    <span className="font-bold text-gray-900">
-                      {formatCurrency(profile.summary?.totalActivePiutangAmount || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Piutang aktif</span>
-                    <span className="font-bold text-gray-900">
-                      {profile.summary?.activePiutang || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Piutang lunas</span>
-                    <span className="font-bold text-gray-900">
-                      {profile.summary?.completedPiutang || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total piutang lunas</span>
-                    <span className="font-bold text-gray-900">
-                      {formatCurrency(profile.summary?.totalCompletedPiutangAmount || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center pt-2 border-t">
-                    <span className="text-gray-600">Total semua piutang</span>
-                    <span className="font-bold text-gray-900">
-                      {profile.summary?.totalPiutang || 0}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <ProfileSummaryContent 
+            profile={profile} 
+            statistics={simpananData?.data?.statistics} 
+            formatCurrency={formatCurrency} 
+          />
         </TabsContent>
       </Tabs>
     </div>

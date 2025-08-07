@@ -59,13 +59,13 @@ const Layout = ({ children }: LayoutProps) => {
       <nav className="bg-white shadow-lg border-b border-green-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex">
+            <div className="flex flex-1 items-center">
               <div className="flex-shrink-0 flex items-center">
-                <Link to="/" className="flex items-center space-x-2">
+                <Link to="/" className="flex items-center space-x-2 pr-2">
                   <div className="w-15 h-15 rounded-lg flex items-center justify-center overflow-hidden">
                     <img src="/IMG_4716.PNG" alt="Logo Koperasi" className="w-12 h-12 object-contain" />
                   </div>
-                  <span className="text-2xl font-bold text-green-800">Koperasi Primkoppolresta</span>
+                  <span className="text-lg sm:text-xl md:text-2xl font-bold text-green-800 truncate">Koperasi Primkoppolresta</span>
                 </Link>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

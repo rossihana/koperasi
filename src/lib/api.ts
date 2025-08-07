@@ -88,8 +88,8 @@ export const apiClient = {
           // Token expired or invalid
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          window.location.href = '/login';
-          throw new Error('Token expired, silakan login kembali');
+          // Do not redirect here, let the calling component handle it (e.g., Login.tsx)
+          throw new Error('Unauthorized: Token expired or invalid credentials');
         }
         throw new Error(errorDetail);
       }

@@ -61,9 +61,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         loginResponse = await apiClient.post(API_ENDPOINTS.LOGIN, loginData);
         console.log('Login response received:', loginResponse);
-      } catch (error) {
+      } catch (error: any) {
+        console.error('First login attempt failed:', error);
         // If first attempt fails, try with old structure
-        console.log('First login attempt failed, trying with old structure...');
+        console.log('Trying with old structure...');
         const oldLoginData = {
           nrp,
           nama: 'User', // Default values
@@ -72,8 +73,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           role: 'member'
         } as Record<string, unknown>;
         
-        loginResponse = await apiClient.post(API_ENDPOINTS.LOGIN, oldLoginData);
-        console.log('Login response with old structure:', loginResponse);
+        try {
+          loginResponse = await apiClient.post(API_ENDPOINTS.LOGIN, oldLoginData);
+          console.log('Login response with old structure:', loginResponse);
+        } catch (oldStructureError: any) {
+          console.error('Old structure login attempt also failed:', oldStructureError);
+          // Re-throw the error so the outer catch block can handle it
+          throw oldStructureError; 
+        }
       }
       
       if (!loginResponse || !(loginResponse.user || loginResponse.data?.user || loginResponse.member || loginResponse.data?.member)) {
@@ -118,8 +125,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Response missing user data or token:', loginResponse);
       setIsLoading(false);
       return false;
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch (error: any) {
+      console.error('Login failed in AuthContext:', error);
+      // Check if the error has a message property
+      if (error.message) {
+        console.error('Login error message:', error.message);
+      }
       setIsLoading(false);
       return false;
     }

@@ -40,9 +40,10 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
   // API hooks
-  const { data: membersResponse, isLoading, error } = useMembersPublic(currentPage);
+  const { data: membersResponse, isLoading, error } = useMembers(currentPage, limit);
   const deleteMemberMutation = useDeleteMember();
 
   // Extract members array from response

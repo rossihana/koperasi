@@ -5,10 +5,23 @@ import { Member } from '@/lib/api';
 
 interface ProfileSummaryContentProps {
   profile: Member;
+  statistics: SimpananTransactionsSummary | undefined;
   formatCurrency: (amount: number) => string;
 }
 
-export const ProfileSummaryContent = ({ profile, formatCurrency }: ProfileSummaryContentProps) => {
+export const ProfileSummaryContent = ({ profile, statistics, formatCurrency }: ProfileSummaryContentProps) => {
+  const getCount = (type: 'setoran' | 'penarikan' | 'koreksi') => {
+    if (!statistics?.byType) {
+      return 0;
+    }
+    const transactionType = statistics.byType.find((t) => t.type === type);
+    return transactionType?.count || 0;
+  };
+
+  const totalTransactions = statistics?.total?.transactions || 0;
+
+  const simpananData = typeof profile.simpanan === 'object' ? profile.simpanan : null;
+
   return (
     <TabsContent value="summary">
       <div className="space-y-6">
@@ -25,61 +38,61 @@ export const ProfileSummaryContent = ({ profile, formatCurrency }: ProfileSummar
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Total simpanan</span>
                 <span className="font-bold text-gray-900">
-                  {formatCurrency(profile.simpanan?.totalSimpanan || 0)}
+                  {formatCurrency(simpananData?.totalSimpanan || 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Simpanan Pokok</span>
                 <span className="font-bold text-gray-900">
-                  {formatCurrency(profile.simpanan?.simpananPokok || 0)}
+                  {formatCurrency(simpananData?.simpananPokok || 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Simpanan Wajib</span>
                 <span className="font-bold text-gray-900">
-                  {formatCurrency(profile.simpanan?.simpananWajib || 0)}
+                  {formatCurrency(simpananData?.simpananWajib || 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Simpanan Sukarela</span>
                 <span className="font-bold text-gray-900">
-                  {formatCurrency(profile.simpanan?.simpananSukarela || 0)}
+                  {formatCurrency(simpananData?.simpananSukarela || 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Tabungan Hari Raya</span>
                 <span className="font-bold text-gray-900">
-                  {formatCurrency(profile.simpanan?.tabunganHariRaya || 0)}
+                  {formatCurrency(simpananData?.tabunganHariRaya || 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-gray-600">Jumlah transaksi</span>
                 <span className="font-bold text-gray-900">
-                  {profile.summary?.simpananTransactions?.totalTransactions || 0}
+                  {totalTransactions}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total setoran</span>
+                <span className="text-gray-600">Transaksi Setoran</span>
                 <span className="font-bold text-gray-900">
-                  {formatCurrency(profile.summary?.simpananTransactions?.totalSetoran || 0)}
+                  {getCount('setoran')}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total penarikan</span>
+                <span className="text-gray-600">Transaksi Penarikan</span>
                 <span className="font-bold text-gray-900">
-                  {formatCurrency(profile.summary?.simpananTransactions?.totalPenarikan || 0)}
+                  {getCount('penarikan')}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total koreksi</span>
+                <span className="text-gray-600">Transaksi Koreksi</span>
                 <span className="font-bold text-gray-900">
-                  {formatCurrency(profile.summary?.simpananTransactions?.totalKoreksi || 0)}
+                  {getCount('koreksi')}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Transaksi terakhir</span>
                 <span className="font-bold text-gray-900">
-                  {profile.summary?.simpananTransactions?.lastTransactionDate 
+                  {profile.summary?.simpananTransactions?.lastTransactionDate
                     ? new Date(profile.summary.simpananTransactions.lastTransactionDate).toLocaleDateString('id-ID')
                     : '-'}
                 </span>

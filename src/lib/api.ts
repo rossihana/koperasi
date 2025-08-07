@@ -245,12 +245,19 @@ export interface MemberSimpanan {
   tabunganHariRaya: number;
 }
 
+export interface TransactionByType {
+  type: string;
+  count: number;
+  amount: string;
+}
+
 export interface SimpananTransactionsSummary {
-  totalTransactions: number;
-  totalSetoran: number;
-  totalPenarikan: number;
-  totalKoreksi: number;
-  lastTransactionDate: string;
+  total: {
+    transactions: number;
+    amount: string;
+  };
+  byType: TransactionByType[];
+  lastTransactionDate?: string;
 }
 
 export interface MemberSummary {
@@ -359,4 +366,17 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface SimpananTransactionListResponse {
+  transactions: Transaction[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalTransactions: number;
+    limit: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+  statistics: SimpananTransactionsSummary;
 } 

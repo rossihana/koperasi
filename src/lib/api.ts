@@ -298,7 +298,7 @@ export interface Product {
   harga: number;
   deskripsi: string;
   namaKategori: string;
-  foto: string;
+  fotoProduk: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,5 +1,3 @@
-
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,6 +30,9 @@ interface ProductFormProps {
   isLoading?: boolean;
 }
 
+import { useState, useEffect } from 'react';
+// ... other imports
+
 const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProps) => {
   const [formData, setFormData] = useState({
     name: product?.name || '',
@@ -42,6 +43,30 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProp
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(product?.image || '');
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name,
+        price: product.price.toString(),
+        category: product.category,
+        description: product.description || ''
+      });
+      setImagePreview(product.image || '');
+      console.log('Image preview set to:', product.image || ''); // Add this line
+      setImageFile(null); // Clear any previously selected file when editing a new product
+    } else {
+      // Reset form for new product creation
+      setFormData({
+        name: '',
+        price: '',
+        category: '',
+        description: ''
+      });
+      setImagePreview('');
+      setImageFile(null);
+    }
+  }, [product]);
 
   const categories = [
     { value: 'makanan', label: 'Makanan & Minuman' },
@@ -172,6 +197,10 @@ const ProductForm = ({ product, onSubmit, onCancel, isLoading }: ProductFormProp
               src={imagePreview}
               alt="Preview"
               className="w-full h-32 object-cover rounded-lg"
+              onError={(e) => {
+                console.error('Error loading image:', e.currentTarget.src);
+                e.currentTarget.src = '/placeholder.svg'; // Fallback to a placeholder image
+              }}
             />
             <Button
               type="button"

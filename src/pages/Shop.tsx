@@ -291,7 +291,7 @@ const Shop = () => {
               id: editingProduct.id,
               name: editingProduct.namaProduk,
               price: editingProduct.harga,
-              image: editingProduct.foto || '/placeholder.svg',
+              image: editingProduct.fotoProduk || '/placeholder.svg',
               category: editingProduct.namaKategori,
               description: editingProduct.deskripsi
             } : undefined}

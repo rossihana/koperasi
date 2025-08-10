@@ -286,7 +286,7 @@ export interface Member {
   activeLoanCount: number;
   hasActiveLoan: boolean;
   simpanan?: MemberSimpanan | number;
-  piutang?: number;
+  piutang?: Piutang[];
   summary?: MemberSummary;
   joinDate?: string;
 }
@@ -315,10 +315,14 @@ export interface CreateProductRequest {
 export interface Piutang {
   id: string;
   jenis: string;
-  besarPinjaman: number;
-  totalPiutang: number;
-  biayaAngsuran: number;
+  besarPinjaman: number | string;
+  totalPiutang: number | string;
+  biayaAngsuran: number | string;
+  sisaPiutang?: number | string;
+  sisaAngsuran?: number;
   totalAngsuran: number;
+  status: 'active' | 'completed' | 'defaulted';
+  completedAt?: string | null;
   description: string;
   createdAt: string;
   updatedAt: string;

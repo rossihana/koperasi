@@ -77,7 +77,7 @@ export function EditMemberForm({ memberId, initialData }: EditMemberFormProps) {
       toast({
         variant: 'destructive',
         title: 'Gagal',
-        description: 'Terjadi kesalahan saat memperbarui data anggota',
+        description: (error as any)?.message || 'Terjadi kesalahan saat memperbarui data anggota',
       });
     }
   };

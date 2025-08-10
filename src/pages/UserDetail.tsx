@@ -12,6 +12,7 @@ import {
   CreditCard,
   History,
   Calendar,
+  Shield,
   Mail,
   MapPin,
   Phone,
@@ -22,6 +23,7 @@ import {
   Key
 } from 'lucide-react';
 import { ChangePasswordForm } from '@/components/ChangePasswordForm';
+import { DeleteMemberConfirmation } from '@/components/DeleteMemberConfirmation';
 import { EditMemberForm } from '@/components/EditMemberForm';
 import { ProfileSummaryContent } from '@/components/ProfileSummaryContent';
 
@@ -116,9 +118,9 @@ const UserDetail = () => {
           <ArrowLeft className="w-4 h-4 mr-1" />
           Kembali ke Daftar Anggota
         </Link>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
           <h1 className="text-3xl font-bold text-gray-900">Detail Anggota</h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Link to={`/edit-financial/${id}`}>
               <Button className="bg-green-600 hover:bg-green-700">
                 <Edit className="w-4 h-4 mr-2" />
@@ -137,6 +139,7 @@ const UserDetail = () => {
               />
             )}
             <ChangePasswordForm memberId={id} isAdmin={true} />
+            <DeleteMemberConfirmation memberId={id || ''} memberName={member.nama} />
           </div>
         </div>
       </div>
@@ -163,7 +166,7 @@ const UserDetail = () => {
                   Bergabung: {formatDate(member.createdAt)}
                 </div>
                 <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-2" />
+                  <Shield className="w-4 h-4 mr-2" />
                   Jabatan: {member.jabatan}
                 </div>
               </div>

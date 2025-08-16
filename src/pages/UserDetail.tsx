@@ -20,7 +20,8 @@ import {
   ArrowDownRight,
   ArrowRight,
   Edit,
-  Key
+  Key,
+  Calculator
 } from 'lucide-react';
 import { ChangePasswordForm } from '@/components/ChangePasswordForm';
 import { DeleteMemberConfirmation } from '@/components/DeleteMemberConfirmation';
@@ -271,7 +272,9 @@ const UserDetail = () => {
                             </div>
                             <div>
                               <p className="font-medium text-gray-900">{transaction.description}</p>
-                              <p className="text-sm text-gray-500">{formatDate(transaction.createdAt)}</p>
+                              <p className="text-sm text-gray-500">
+                                {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)} • {formatDate(transaction.createdAt)}
+                              </p>
                             </div>
                           </div>
                           <div className="text-right">
@@ -358,26 +361,64 @@ const UserDetail = () => {
                   </div>
                 ) : (
                   <>
-                    {piutangData.data.transactions.map((transaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center">
-                          <div className="p-2 rounded-lg bg-red-100 mr-4">
-                            <ArrowDownRight className="w-5 h-5 text-red-600" />
+                    {piutangData.data.transactions.map((transaction) => {
+                      const transactionTypeMap: { [key: string]: string } = {
+                        payment: 'Bayar Angsuran',
+                        adjustment: 'Koreksi',
+                        pelunasan: 'Pelunasan'
+                      };
+
+                      return (
+                        <div
+                          key={transaction.id}
+                          className={`flex items-center justify-between p-4 rounded-lg ${
+                            transaction.type === 'pelunasan'
+                              ? 'bg-blue-50'
+                              : transaction.type === 'adjustment'
+                              ? 'bg-yellow-50'
+                              : 'bg-red-50'
+                          }`}>
+                          <div className="flex items-center">
+                            <div
+                              className={`p-2 rounded-lg ${
+                                transaction.type === 'pelunasan'
+                                  ? 'bg-blue-100'
+                                  : transaction.type === 'adjustment'
+                                  ? 'bg-yellow-100'
+                                  : 'bg-red-100'
+                              } mr-4`}
+                            >
+                              {transaction.type === 'pelunasan' ? (
+                                <ArrowRight className="w-5 h-5 text-blue-600" />
+                              ) : transaction.type === 'adjustment' ? (
+                                <Calculator className="w-5 h-5 text-yellow-600" />
+                              ) : (
+                                <ArrowDownRight className="w-5 h-5 text-red-600" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{transaction.description}</p>
+                              <p className="text-sm text-gray-500">
+                                {transactionTypeMap[transaction.type] || transaction.type} • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{transaction.description}</p>
-                            <p className="text-sm text-gray-500">
-                              Piutang • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                          <div className="text-right">
+                            <p
+                              className={`font-bold ${
+                                transaction.type === 'pelunasan'
+                                  ? 'text-blue-600'
+                                  : transaction.type === 'adjustment'
+                                  ? 'text-yellow-600'
+                                  : 'text-red-600'
+                              }`}
+                            >
+                              {formatCurrency(transaction.amount)}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-red-600">
-                            {formatCurrency(transaction.amount)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                     
                     {/* Pagination Controls */}
                     {piutangData.data.pagination && piutangData.data.pagination.totalPages > 1 && (

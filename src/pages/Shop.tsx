@@ -43,13 +43,14 @@ const Shop = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 4;
+  const productsPerPage = 10; // Tetapkan batas per halaman
 
-  // API hooks - menggunakan user products untuk tampilan dengan filter kategori
-  const { data: productsResponse, isLoading, error } = useUserProducts(currentPage, selectedCategory);
+  // API hooks - menggunakan user products untuk tampilan dengan filter kategori dan paginasi
+  const { data: productsResponse, isLoading, error } = useUserProducts(currentPage, productsPerPage, selectedCategory);
   
-  // Extract products array from response with safety check
+  // Extract products array and pagination info from response with safety check
   const products = productsResponse?.data?.products || [];
+  const pagination = productsResponse?.data?.pagination;
     
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
@@ -256,22 +257,22 @@ const Shop = () => {
       )}
 
       {/* Pagination */}
-      {productsResponse?.data?.pagination && productsResponse.data.pagination.totalPages > 1 && (
+      {pagination && pagination.totalPages > 1 && (
         <div className="flex justify-center gap-2">
           <Button
             variant="outline"
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
+            disabled={!pagination.hasPrevPage}
           >
             Sebelumnya
           </Button>
           <span className="flex items-center px-4">
-            Halaman {currentPage} dari {productsResponse.data.pagination.totalPages}
+            Halaman {pagination.currentPage} dari {pagination.totalPages}
           </span>
           <Button
             variant="outline"
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, productsResponse.data.pagination.totalPages))}
-            disabled={currentPage === productsResponse.data.pagination.totalPages}
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.totalPages))}
+            disabled={!pagination.hasNextPage}
           >
             Selanjutnya
           </Button>

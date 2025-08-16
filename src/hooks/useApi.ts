@@ -360,11 +360,11 @@ export const useDeleteProduct = () => {
 };
 
 // Product hooks (user)
-export const useUserProducts = (page: number = 1, kategori?: string) => {
+export const useUserProducts = (page: number = 1, limit: number = 10, kategori?: string) => {
   return useQuery({
-    queryKey: ['user-products', page, kategori],
+    queryKey: ['user-products', page, limit, kategori],
     queryFn: () => {
-      const url = `${API_ENDPOINTS.USER_PRODUCTS}?page=${page}${kategori && kategori !== 'all' ? `&kategori=${kategori}` : ''}`;
+      const url = `${API_ENDPOINTS.USER_PRODUCTS}?page=${page}&limit=${limit}${kategori && kategori !== 'all' ? `&kategori=${kategori}` : ''}`;
       return apiClient.get(url);
     },
   });

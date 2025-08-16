@@ -13,6 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -23,7 +32,9 @@ import {
   Save,
   Plus,
   Minus,
-  Calculator
+  Calculator,
+  Calendar,
+  Shield,
 } from 'lucide-react';
 import { useMember, useUpdateSimpanan, useUpdatePiutang, useCreatePiutang } from '@/hooks/useApi';
 import { useQueryClient } from '@tanstack/react-query';
@@ -53,17 +64,18 @@ const EditFinancial = () => {
   });
 
   // Type definitions
-  type DebtFormType = 'payment' | 'pelunasan';
+  type DebtFormType = 'payment' | 'pelunasan' | 'adjustment';
 
   const [debtForm, setDebtForm] = useState({
     type: 'payment' as DebtFormType,
     amount: '',
     description: '',
+    sisaPiutang: '',
+    sisaAngsuran: '',
     interestRate: '2.5',
     duration: '12'
   });
 
-  const [showAddPiutang, setShowAddPiutang] = useState(false);
   const [addPiutangForm, setAddPiutangForm] = useState({
     jenis: '',
     besarPinjaman: '',
@@ -87,6 +99,32 @@ const EditFinancial = () => {
       style: 'currency',
       currency: 'IDR'
     }).format(numAmount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getStatusBadge = (status: string) => {
+    return status === 'aktif' ? (
+      <Badge className="bg-green-100 text-green-800">Aktif</Badge>
+    ) : status === 'suspend' ? (
+      <Badge className="bg-red-100 text-red-800">Suspend</Badge>
+    ) : (
+      <Badge variant="secondary">Tidak Aktif</Badge>
+    );
+  };
+
+  const getRoleBadge = (role: string) => {
+    return role === 'admin' ? (
+      <Badge className="bg-purple-100 text-purple-800">Admin</Badge>
+    ) : (
+      <Badge variant="outline">Anggota</Badge>
+    );
   };
 
   // Loading state
@@ -208,13 +246,24 @@ const EditFinancial = () => {
         });
         return;
       }
-    } else if (!debtForm.amount || !debtForm.description) {
-      toast({
-        title: "Data tidak lengkap",
-        description: "Harap isi semua field yang diperlukan",
-        variant: "destructive",
-      });
-      return;
+    } else if (debtForm.type === 'payment') {
+      if (!debtForm.amount || !debtForm.description) {
+        toast({
+          title: "Data tidak lengkap",
+          description: "Harap isi semua field yang diperlukan",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else if (debtForm.type === 'adjustment') {
+      if (!debtForm.sisaPiutang || !debtForm.sisaAngsuran || !debtForm.description) {
+        toast({
+          title: "Data tidak lengkap",
+          description: "Harap isi semua field untuk koreksi",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     try {
@@ -233,9 +282,11 @@ const EditFinancial = () => {
 
       // Prepare the request payload
       const payload: {
-        type: 'payment' | 'pelunasan';
+        type: 'payment' | 'pelunasan' | 'adjustment';
         description: string;
         amount?: number;
+        sisaPiutang?: number;
+        sisaAngsuran?: number;
       } = {
         type: debtForm.type,
         description: debtForm.description
@@ -244,6 +295,11 @@ const EditFinancial = () => {
       // Only include amount for payment type
       if (debtForm.type === 'payment' && debtForm.amount) {
         payload.amount = parseFloat(debtForm.amount);
+      }
+
+      if (debtForm.type === 'adjustment') {
+        payload.sisaPiutang = parseFloat(debtForm.sisaPiutang);
+        payload.sisaAngsuran = parseInt(debtForm.sisaAngsuran);
       }
 
       console.log('Sending request with payload:', payload);
@@ -257,7 +313,7 @@ const EditFinancial = () => {
       toast({
         title: 'Transaksi piutang berhasil',
       });
-      setDebtForm({ type: 'payment', amount: '', description: '', interestRate: '2.5', duration: '12' });
+      setDebtForm({ type: 'payment', amount: '', description: '', sisaPiutang: '', sisaAngsuran: '', interestRate: '2.5', duration: '12' });
     } catch (err) {
       toast({
         title: 'Gagal update piutang',
@@ -293,7 +349,6 @@ const EditFinancial = () => {
       });
       toast({ title: 'Tambah piutang berhasil' });
       setAddPiutangForm({ jenis: '', besarPinjaman: '', totalPiutang: '', biayaAngsuran: '', totalAngsuran: '', description: '' });
-      setShowAddPiutang(false);
       await queryClient.invalidateQueries({ queryKey: ['member', id] });
     } catch (err) {
       toast({
@@ -339,15 +394,30 @@ const EditFinancial = () => {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Edit Data Keuangan</h1>
         <p className="text-gray-600 mb-6">Kelola simpanan dan piutang anggota</p>
         <Card className="mb-8">
-          <CardContent className="p-6 flex items-center gap-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center">
-              <User className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">{member.nama}</h2>
-              <div className="flex flex-wrap gap-2 mb-1">
-                <Badge variant="outline">NRP: {member.nrp}</Badge>
-                <Badge variant="outline">{member.role === 'admin' ? 'Admin' : 'Anggota'}</Badge>
+          <CardContent className="p-8">
+            <div className="flex items-start space-x-6">
+              <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center">
+                <User className="w-12 h-12 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">{member.nama}</h2>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {getRoleBadge(member.role)}
+                  {getStatusBadge(member.status)}
+                  <Badge variant="outline">
+                    NRP: {member.nrp}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Bergabung: {formatDate(member.createdAt)}
+                  </div>
+                  <div className="flex items-center">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Jabatan: {member.jabatan}
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -565,46 +635,51 @@ const EditFinancial = () => {
               <CardContent>
                 {/* Form Tambah Piutang */}
                 <div className="mb-6">
-                  {showAddPiutang ? (
-                    <form onSubmit={handleAddPiutang} className="space-y-4 p-4 bg-gray-50 rounded-lg border">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="jenis">Jenis</Label>
-                          <Input id="jenis" value={addPiutangForm.jenis} onChange={e => setAddPiutangForm(f => ({ ...f, jenis: e.target.value }))} required />
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="mb-4">
+                        <Plus className="w-4 h-4 mr-2" />Tambah Piutang
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[600px]">
+                      <DialogHeader>
+                        <DialogTitle>Tambah Piutang</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleAddPiutang} className="space-y-4 p-4 bg-gray-50 rounded-lg border">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="jenis">Jenis</Label>
+                            <Input id="jenis" value={addPiutangForm.jenis} onChange={e => setAddPiutangForm(f => ({ ...f, jenis: e.target.value }))} required />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="besarPinjaman">Besar Pinjaman</Label>
+                            <Input id="besarPinjaman" type="number" value={addPiutangForm.besarPinjaman} onChange={e => setAddPiutangForm(f => ({ ...f, besarPinjaman: e.target.value }))} required />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="totalPiutang">Total Piutang</Label>
+                            <Input id="totalPiutang" type="number" value={addPiutangForm.totalPiutang} onChange={e => setAddPiutangForm(f => ({ ...f, totalPiutang: e.target.value }))} required />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="biayaAngsuran">Biaya Angsuran</Label>
+                            <Input id="biayaAngsuran" type="number" value={addPiutangForm.biayaAngsuran} onChange={e => setAddPiutangForm(f => ({ ...f, biayaAngsuran: e.target.value }))} required />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="totalAngsuran">Total Angsuran</Label>
+                            <Input id="totalAngsuran" type="number" value={addPiutangForm.totalAngsuran} onChange={e => setAddPiutangForm(f => ({ ...f, totalAngsuran: e.target.value }))} required />
+                          </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="besarPinjaman">Besar Pinjaman</Label>
-                          <Input id="besarPinjaman" type="number" value={addPiutangForm.besarPinjaman} onChange={e => setAddPiutangForm(f => ({ ...f, besarPinjaman: e.target.value }))} required />
+                          <Label htmlFor="description">Keterangan</Label>
+                          <Textarea id="description" value={addPiutangForm.description} onChange={e => setAddPiutangForm(f => ({ ...f, description: e.target.value }))} required />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="totalPiutang">Total Piutang</Label>
-                          <Input id="totalPiutang" type="number" value={addPiutangForm.totalPiutang} onChange={e => setAddPiutangForm(f => ({ ...f, totalPiutang: e.target.value }))} required />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="biayaAngsuran">Biaya Angsuran</Label>
-                          <Input id="biayaAngsuran" type="number" value={addPiutangForm.biayaAngsuran} onChange={e => setAddPiutangForm(f => ({ ...f, biayaAngsuran: e.target.value }))} required />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="totalAngsuran">Total Angsuran</Label>
-                          <Input id="totalAngsuran" type="number" value={addPiutangForm.totalAngsuran} onChange={e => setAddPiutangForm(f => ({ ...f, totalAngsuran: e.target.value }))} required />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="description">Keterangan</Label>
-                        <Textarea id="description" value={addPiutangForm.description} onChange={e => setAddPiutangForm(f => ({ ...f, description: e.target.value }))} required />
-                      </div>
-                      <div className="flex gap-2 justify-end">
-                        <Button type="button" variant="outline" onClick={() => setShowAddPiutang(false)}>Batal</Button>
-                        <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={createPiutang.isPending}>
-                          {createPiutang.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Tambah Piutang'}
-                        </Button>
-                      </div>
-                    </form>
-                  ) : (
-                    <Button variant="outline" className="mb-4" onClick={() => setShowAddPiutang(true)}>
-                      <Plus className="w-4 h-4 mr-2" />Tambah Piutang
-                    </Button>
-                  )}
+                        <DialogFooter>
+                          <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={createPiutang.isPending}>
+                            {createPiutang.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Tambah Piutang'}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </div>
                 <form onSubmit={handleDebtSubmit} className="space-y-6">
                   <div className="space-y-2">
@@ -629,12 +704,46 @@ const EditFinancial = () => {
                             Pelunasan
                           </div>
                         </SelectItem>
+                        <SelectItem value="adjustment">
+                          <div className="flex items-center">
+                            <Calculator className="w-4 h-4 mr-2 text-yellow-600" />
+                            Koreksi
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
+                  {/* Input fields for koreksi */}
+                  {debtForm.type === 'adjustment' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="sisa-piutang">Sisa Piutang (Rp)</Label>
+                        <Input
+                          id="sisa-piutang"
+                          type="number"
+                          placeholder="Masukkan sisa piutang"
+                          value={debtForm.sisaPiutang}
+                          onChange={(e) => setDebtForm(prev => ({ ...prev, sisaPiutang: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sisa-angsuran">Sisa Angsuran</Label>
+                        <Input
+                          id="sisa-angsuran"
+                          type="number"
+                          placeholder="Masukkan sisa angsuran"
+                          value={debtForm.sisaAngsuran}
+                          onChange={(e) => setDebtForm(prev => ({ ...prev, sisaAngsuran: e.target.value }))}
+                          required
+                        />
+                      </div>
+                    </>
+                  )}
+
                   {/* Input jumlah hanya untuk payment */}
-                  {debtForm.type !== 'pelunasan' && (
+                  {debtForm.type === 'payment' && (
                     <div className="space-y-2">
                       <Label htmlFor="debt-amount">Jumlah (Rp)</Label>
                       <Input

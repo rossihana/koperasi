@@ -328,12 +328,14 @@ export interface Piutang {
   updatedAt: string;
 }
 
-export type PiutangTransactionType = 'payment' | 'pelunasan';
+export type PiutangTransactionType = 'payment' | 'pelunasan' | 'adjustment';
 
 export interface UpdatePiutangRequest extends Record<string, unknown> {
   type: PiutangTransactionType;
   amount?: number;
   description: string;
+  sisaPiutang?: number;
+  sisaAngsuran?: number;
 }
 
 export interface CreatePiutangRequest extends Record<string, unknown> {

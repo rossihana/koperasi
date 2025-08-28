@@ -1,5 +1,4 @@
 
-import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +13,8 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
-import { useMembersPublic, useUserProducts, useMember, useMemberProfile, useMemberTransactionsCombined, useMyTransactionsCombined } from '@/hooks/useApi';
+import { useAuth } from "@/contexts/AuthContext";
+import { useMemberProfile, useMembersPublic, useUserProducts, useMyTransactionsCombined } from "@/hooks/useApi";
 
 const Index = () => {
   const { user } = useAuth();
@@ -90,8 +90,8 @@ const Index = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {quickStats.map((stat, index) => {
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${user?.role === 'admin' ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-6 mb-8`}>
+        {user?.role !== 'admin' && quickStats.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <Card key={index} className="hover:shadow-lg transition-shadow">
@@ -108,8 +108,7 @@ const Index = () => {
               </CardContent>
             </Card>
           );
-        })}
-        
+        })}        
         {user?.role === 'admin' && (
           <>
             <Card className="hover:shadow-lg transition-shadow">
@@ -143,95 +142,97 @@ const Index = () => {
       </div>
 
       {/* Recent Transactions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2" />
-            Transaksi Terbaru
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {!transactionsResponse ? (
-              <div className="flex items-center justify-center p-8">
-                <div className="animate-spin h-6 w-6 border-2 border-green-600 border-t-transparent rounded-full"></div>
-                <span className="ml-2 text-gray-600">Memuat transaksi...</span>
-              </div>
-            ) : !transactionsResponse.data?.transactions || transactionsResponse.data.transactions.length === 0 ? (
-              <div className="text-center p-8 text-gray-500">
-                Belum ada transaksi
-              </div>
-            ) : (
-              <>
-                {transactionsResponse.data.transactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <div className={`p-2 rounded-lg mr-4 ${
-                          transaction.type === 'setoran' ? 'bg-green-100' : 'bg-red-100'
-                        }`}>
-                          {transaction.type === 'setoran' ? (
-                            <ArrowUpRight className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <ArrowDownRight className="w-5 h-5 text-red-600" />
-                          )}
+      {user?.role !== 'admin' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2" />
+              Transaksi Terbaru
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {!transactionsResponse ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="animate-spin h-6 w-6 border-2 border-green-600 border-t-transparent rounded-full"></div>
+                  <span className="ml-2 text-gray-600">Memuat transaksi...</span>
+                </div>
+              ) : !transactionsResponse.data?.transactions || transactionsResponse.data.transactions.length === 0 ? (
+                <div className="text-center p-8 text-gray-500">
+                  Belum ada transaksi
+                </div>
+              ) : (
+                <>
+                  {transactionsResponse.data.transactions.map((transaction) => (
+                      <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center">
+                          <div className={`p-2 rounded-lg mr-4 ${
+                            transaction.type === 'setoran' ? 'bg-green-100' : 'bg-red-100'
+                          }`}>
+                            {transaction.type === 'setoran' ? (
+                              <ArrowUpRight className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <ArrowDownRight className="w-5 h-5 text-red-600" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{transaction.description}</p>
+                            <p className="text-sm text-gray-500">
+                              {transaction.category ? 'Simpanan ' + transaction.category : 'Piutang'} • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{transaction.description}</p>
-                          <p className="text-sm text-gray-500">
-                            {transaction.category ? 'Simpanan ' + transaction.category : 'Piutang'} • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                        <div className="text-right">
+                          <p className={`font-bold ${
+                            transaction.type === 'setoran' ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {formatCurrency(Math.abs(transaction.amount))}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`font-bold ${
-                          transaction.type === 'setoran' ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {formatCurrency(Math.abs(transaction.amount))}
-                        </p>
-                      </div>
+                    ))}
+                    
+                  {/* Pagination */}
+                  {transactionsResponse.data.pagination.totalPages > 1 && (
+                    <div className="flex justify-center items-center space-x-2 pt-4">
+                      <button
+                        onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                        disabled={transactionsResponse.data.pagination.currentPage === 1}
+                        className={`px-3 py-1 rounded-md ${
+                          transactionsResponse.data.pagination.currentPage === 1 
+                            ? 'bg-gray-100 text-gray-400' 
+                            : 'bg-green-50 text-green-600 hover:bg-green-100'
+                        }`}
+                      >
+                        Sebelumnya
+                      </button>
+                      <span className="text-sm text-gray-600">
+                        Halaman {transactionsResponse.data.pagination.currentPage} dari{' '}
+                        {transactionsResponse.data.pagination.totalPages}
+                      </span>
+                      <button
+                        onClick={() => setCurrentPage(page => Math.min(
+                          transactionsResponse.data.pagination.totalPages,
+                          page + 1
+                        ))}
+                        disabled={transactionsResponse.data.pagination.currentPage === transactionsResponse.data.pagination.totalPages}
+                        className={`px-3 py-1 rounded-md ${
+                          transactionsResponse.data.pagination.currentPage === transactionsResponse.data.pagination.totalPages
+                            ? 'bg-gray-100 text-gray-400'
+                            : 'bg-green-50 text-green-600 hover:bg-green-100'
+                        }`}
+                      >
+                        Selanjutnya
+                      </button>
                     </div>
-                  ))}
-                  
-                {/* Pagination */}
-                {transactionsResponse.data.pagination.totalPages > 1 && (
-                  <div className="flex justify-center items-center space-x-2 pt-4">
-                    <button
-                      onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
-                      disabled={transactionsResponse.data.pagination.currentPage === 1}
-                      className={`px-3 py-1 rounded-md ${
-                        transactionsResponse.data.pagination.currentPage === 1 
-                          ? 'bg-gray-100 text-gray-400' 
-                          : 'bg-green-50 text-green-600 hover:bg-green-100'
-                      }`}
-                    >
-                      Sebelumnya
-                    </button>
-                    <span className="text-sm text-gray-600">
-                      Halaman {transactionsResponse.data.pagination.currentPage} dari{' '}
-                      {transactionsResponse.data.pagination.totalPages}
-                    </span>
-                    <button
-                      onClick={() => setCurrentPage(page => Math.min(
-                        transactionsResponse.data.pagination.totalPages,
-                        page + 1
-                      ))}
-                      disabled={transactionsResponse.data.pagination.currentPage === transactionsResponse.data.pagination.totalPages}
-                      className={`px-3 py-1 rounded-md ${
-                        transactionsResponse.data.pagination.currentPage === transactionsResponse.data.pagination.totalPages
-                          ? 'bg-gray-100 text-gray-400'
-                          : 'bg-green-50 text-green-600 hover:bg-green-100'
-                      }`}
-                    >
-                      Selanjutnya
-                    </button>
-                  </div>
-                )}
-          
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                  )}
+            
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

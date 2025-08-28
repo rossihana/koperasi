@@ -256,10 +256,10 @@ const EditFinancial = () => {
         return;
       }
     } else if (debtForm.type === 'adjustment') {
-      if (!debtForm.sisaPiutang || !debtForm.sisaAngsuran || !debtForm.description) {
+      if (!debtForm.sisaPiutang && !debtForm.sisaAngsuran && !debtForm.description) {
         toast({
           title: "Data tidak lengkap",
-          description: "Harap isi semua field untuk koreksi",
+          description: "Harap isi setidaknya satu field untuk koreksi (sisa piutang, sisa angsuran, atau keterangan).",
           variant: "destructive",
         });
         return;
@@ -298,8 +298,12 @@ const EditFinancial = () => {
       }
 
       if (debtForm.type === 'adjustment') {
-        payload.sisaPiutang = parseFloat(debtForm.sisaPiutang);
-        payload.sisaAngsuran = parseInt(debtForm.sisaAngsuran);
+        if (debtForm.sisaPiutang) {
+          payload.sisaPiutang = parseFloat(debtForm.sisaPiutang);
+        }
+        if (debtForm.sisaAngsuran) {
+          payload.sisaAngsuran = parseInt(debtForm.sisaAngsuran, 10);
+        }
       }
 
       console.log('Sending request with payload:', payload);
@@ -725,7 +729,6 @@ const EditFinancial = () => {
                           placeholder="Masukkan sisa piutang"
                           value={debtForm.sisaPiutang}
                           onChange={(e) => setDebtForm(prev => ({ ...prev, sisaPiutang: e.target.value }))}
-                          required
                         />
                       </div>
                       <div className="space-y-2">
@@ -736,7 +739,6 @@ const EditFinancial = () => {
                           placeholder="Masukkan sisa angsuran"
                           value={debtForm.sisaAngsuran}
                           onChange={(e) => setDebtForm(prev => ({ ...prev, sisaAngsuran: e.target.value }))}
-                          required
                         />
                       </div>
                     </>
@@ -766,7 +768,7 @@ const EditFinancial = () => {
                       placeholder="Masukkan keterangan transaksi"
                       value={debtForm.description}
                       onChange={(e) => setDebtForm(prev => ({ ...prev, description: e.target.value }))}
-                      required
+                      required={debtForm.type !== 'adjustment'}
                     />
                   </div>
 

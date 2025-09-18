@@ -363,6 +363,8 @@ export interface Transaction {
   description: string;
   category?: string;
   createdAt: string;
+  balanceBefore?: number;
+  balanceAfter?: number;
 }
 
 // Pagination response

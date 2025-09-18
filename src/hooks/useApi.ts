@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, API_ENDPOINTS, Member, Product, Transaction, Piutang, CreateProductRequest, CreatePiutangRequest, UpdatePiutangRequest, UpdateSimpananRequest, PaginatedResponse } from '@/lib/api';
+import { apiClient, API_ENDPOINTS, Member, Product, Transaction, Piutang, CreateProductRequest, CreatePiutangRequest, UpdatePiutangRequest, UpdateSimpananRequest, PaginatedResponse, ApiResponse, SimpananTransactionListResponse } from '@/lib/api';
 
 // Auth hooks
 export const useLogin = () => {
@@ -164,7 +164,7 @@ export const useMemberSimpananTransactions = (page: number = 1, limit: number = 
   return useQuery({
     queryKey: ['member-simpanan-transactions', page, limit],
     queryFn: () => {
-      let url = `${API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_SIMPANAN}?page=${page}&limit=${limit}`;
+      const url = `${API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_SIMPANAN}?page=${page}&limit=${limit}`;
       return apiClient.get(url);
     },
   });
@@ -174,7 +174,7 @@ export const useMemberPiutangTransactions = (page: number = 1, limit: number = 5
   return useQuery({
     queryKey: ['member-piutang-transactions', page, limit],
     queryFn: () => {
-      let url = `${API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_PIUTANG}?page=${page}&limit=${limit}`;
+      const url = `${API_ENDPOINTS.MEMBER_ME_TRANSACTIONS_PIUTANG}?page=${page}&limit=${limit}`;
       return apiClient.get(url);
     },
   });
@@ -251,11 +251,11 @@ export const useMemberTransactionsSimpanan = (memberId: string, page: number = 1
   });
 };
 
-export const useMemberTransactionsPiutang = (memberId: string, page: number = 1, limit: number = 5) => {
+export const useMemberTransactionsPiutang = (memberId: string) => {
   return useQuery({
-    queryKey: ['transactions-piutang', memberId, page, limit],
+    queryKey: ['transactions-piutang', memberId],
     queryFn: () => {
-      let url = `${API_ENDPOINTS.ADMIN_MEMBER_TRANSACTIONS_PIUTANG(memberId)}?page=${page}&limit=${limit}`;
+      const url = `${API_ENDPOINTS.ADMIN_MEMBER_PIUTANG(memberId)}`;
       return apiClient.get(url);
     },
     enabled: !!memberId,

@@ -36,7 +36,6 @@ const UserDetail = () => {
   // Pagination state for simpanan transactions
   const [currentSimpananPage, setCurrentSimpananPage] = useState(1);
   const transactionsPerPage = 5;
-  const [currentPiutangPage, setCurrentPiutangPage] = useState(1);
 
   const { data: memberResponse, isLoading, error } = useMember(id || '');
   const { data: simpananData, isLoading: isLoadingSimpanan } = useMemberTransactionsSimpanan(id || '', currentSimpananPage, transactionsPerPage);
@@ -44,7 +43,7 @@ const UserDetail = () => {
   // Extract member data from response
   const member = memberResponse?.data || memberResponse;
 
-  const { data: piutangData, isLoading: isLoadingPiutang } = useMemberTransactionsPiutang(id || '', currentPiutangPage, transactionsPerPage);
+  const { data: piutangData, isLoading: isLoadingPiutang } = useMemberTransactionsPiutang(id || '');
 
   const formatCurrency = (amount: number | string) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -340,12 +339,12 @@ const UserDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Debt History */}
+          {/* Active Debts */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center text-red-700">
                 <CreditCard className="w-5 h-5 mr-2" />
-                Riwayat Piutang
+                Piutang Aktif
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -355,104 +354,40 @@ const UserDetail = () => {
                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
                     <span>Memuat data...</span>
                   </div>
-                ) : !piutangData?.data?.transactions || piutangData.data.transactions.length === 0 ? (
+                ) : !piutangData?.data?.piutang || piutangData.data.piutang.length === 0 ? (
                   <div className="text-center p-4 text-gray-500">
-                    Belum ada transaksi piutang
+                    Tidak ada piutang aktif.
                   </div>
                 ) : (
                   <>
-                    {piutangData.data.transactions.map((transaction) => {
-                      const transactionTypeMap: { [key: string]: string } = {
-                        payment: 'Bayar Angsuran',
-                        adjustment: 'Koreksi',
-                        pelunasan: 'Pelunasan'
-                      };
-
-                      return (
-                        <div
-                          key={transaction.id}
-                          className={`flex items-center justify-between p-4 rounded-lg ${
-                            transaction.type === 'pelunasan'
-                              ? 'bg-blue-50'
-                              : transaction.type === 'adjustment'
-                              ? 'bg-yellow-50'
-                              : 'bg-red-50'
-                          }`}>
-                          <div className="flex items-center">
-                            <div
-                              className={`p-2 rounded-lg ${
-                                transaction.type === 'pelunasan'
-                                  ? 'bg-blue-100'
-                                  : transaction.type === 'adjustment'
-                                  ? 'bg-yellow-100'
-                                  : 'bg-red-100'
-                              } mr-4`}
-                            >
-                              {transaction.type === 'pelunasan' ? (
-                                <ArrowRight className="w-5 h-5 text-blue-600" />
-                              ) : transaction.type === 'adjustment' ? (
-                                <Calculator className="w-5 h-5 text-yellow-600" />
-                              ) : (
-                                <ArrowDownRight className="w-5 h-5 text-red-600" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900">{transaction.description}</p>
-                              <p className="text-sm text-gray-500">
-                                {transactionTypeMap[transaction.type] || transaction.type} • {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
-                              </p>
-                            </div>
+                    {piutangData.data.piutang.map((piutang) => (
+                      <div
+                        key={piutang.id}
+                        className="flex items-center justify-between p-4 rounded-lg bg-red-50">
+                        <div className="flex items-center">
+                          <div className="p-2 rounded-lg bg-red-100 mr-4">
+                            <CreditCard className="w-5 h-5 text-red-600" />
                           </div>
-                          <div className="text-right">
-                            <p
-                              className={`font-bold ${
-                                transaction.type === 'pelunasan'
-                                  ? 'text-blue-600'
-                                  : transaction.type === 'adjustment'
-                                  ? 'text-yellow-600'
-                                  : 'text-red-600'
-                              }`}
-                            >
-                              {formatCurrency(transaction.amount)}
+                          <div>
+                            <p className="font-medium text-gray-900">{piutang.jenis}</p>
+                            <p className="text-sm text-gray-500">
+                              {piutang.description} • {formatDate(piutang.createdAt)}
                             </p>
                           </div>
                         </div>
-                      )
-                    })}
-                    
-                    {/* Pagination Controls */}
-                    {piutangData.data.pagination && piutangData.data.pagination.totalPages > 1 && (
-                      <div className="flex justify-center items-center space-x-2 pt-4">
-                        <button
-                          onClick={() => setCurrentPiutangPage(page => Math.max(1, page - 1))}
-                          disabled={piutangData.data.pagination.currentPage === 1}
-                          className={`px-3 py-1 rounded-md ${
-                            piutangData.data.pagination.currentPage === 1
-                              ? 'bg-gray-100 text-gray-400'
-                              : 'bg-red-50 text-red-600 hover:bg-red-100'
-                          }`}
-                        >
-                          Sebelumnya
-                        </button>
-                        <span className="text-sm text-gray-600">
-                          Halaman {piutangData.data.pagination.currentPage} dari{' '}
-                          {piutangData.data.pagination.totalPages}
-                        </span>
-                        <button
-                          onClick={() => setCurrentPiutangPage(page => 
-                            Math.min(piutangData.data.pagination.totalPages, page + 1)
-                          )}
-                          disabled={piutangData.data.pagination.currentPage === piutangData.data.pagination.totalPages}
-                          className={`px-3 py-1 rounded-md ${
-                            piutangData.data.pagination.currentPage === piutangData.data.pagination.totalPages
-                              ? 'bg-gray-100 text-gray-400'
-                              : 'bg-red-50 text-red-600 hover:bg-red-100'
-                          }`}
-                        >
-                          Selanjutnya
-                        </button>
+                        <div className="text-right">
+                          <p className="font-bold text-red-600">
+                            {formatCurrency(piutang.besarPinjaman)}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Sisa: {formatCurrency(piutang.sisaPiutang || 0)}
+                          </p>
+                          <Badge variant={piutang.status === 'active' ? 'default' : 'outline'}>
+                            {piutang.status}
+                          </Badge>
+                        </div>
                       </div>
-                    )}
+                    ))}
                   </>
                 )}
               </div>
